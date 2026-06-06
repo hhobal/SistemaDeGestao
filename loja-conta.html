@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minha Conta — Loja</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Poppins',sans-serif;background:#0d0f12;color:#e8eaf0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+.container{width:100%;max-width:440px}
+.logo{text-align:center;margin-bottom:24px}
+.logo-icon{width:52px;height:52px;background:#4f8ef7;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;margin:0 auto 10px}
+.logo h1{font-size:20px;font-weight:700}
+.logo p{font-size:13px;color:#8b93a7}
+.card{background:#1e2430;border:1px solid #2a3040;border-radius:12px;padding:28px;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.tabs{display:flex;gap:0;margin-bottom:24px;background:#161a20;border-radius:8px;padding:4px}
+.tab{flex:1;padding:8px;text-align:center;font-size:13px;font-weight:500;cursor:pointer;border-radius:6px;border:none;background:transparent;color:#8b93a7;transition:all .2s}
+.tab.active{background:#4f8ef7;color:#fff}
+.form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.form-group label{font-size:12px;font-weight:500;color:#8b93a7}
+input{background:#161a20;border:1px solid #2a3040;color:#e8eaf0;padding:10px 12px;border-radius:8px;font-size:13px;font-family:inherit;width:100%;transition:border-color .2s}
+input:focus{outline:none;border-color:#4f8ef7}
+input::placeholder{color:#555e70}
+input.erro{border-color:#f87171}
+.btn{width:100%;padding:11px;border:none;border-radius:8px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .2s}
+.btn-primary{background:#4f8ef7;color:#fff}
+.btn-primary:hover{background:#3a7aee;transform:translateY(-1px)}
+.msg-erro{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);color:#f87171;padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:14px;display:none}
+.msg-ok{background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);color:#34d399;padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:14px;display:none}
+.voltar{text-align:center;margin-top:16px;font-size:13px;color:#8b93a7}
+.voltar a{color:#4f8ef7;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="logo">
+    <div class="logo-icon"><i class="fa-solid fa-bag-shopping"></i></div>
+    <h1>GestãoPro Loja</h1>
+    <p>Acesse sua conta para finalizar a compra</p>
+  </div>
+  <div class="card">
+    <div class="tabs">
+      <button class="tab active" id="tabLogin" onclick="mostrarTab('login')">Entrar</button>
+      <button class="tab" id="tabCadastro" onclick="mostrarTab('cadastro')">Criar conta</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="painelLogin">
+      <div class="msg-erro" id="erroLogin"></div>
+      <div class="form-group"><label>E-mail</label><input type="email" id="loginEmail" placeholder="seu@email.com"></div>
+      <div class="form-group"><label>Senha</label><input type="password" id="loginSenha" placeholder="••••••••"></div>
+      <button class="btn btn-primary" onclick="fazerLogin()"><i class="fa-solid fa-arrow-right-to-bracket"></i> Entrar</button>
+    </div>
+
+    <!-- CADASTRO -->
+    <div id="painelCadastro" style="display:none">
+      <div class="msg-erro" id="erroCadastro"></div>
+      <div class="msg-ok"   id="okCadastro"></div>
+      <div class="form-group"><label>Nome completo</label><input type="text" id="cadNome" placeholder="Seu nome"></div>
+      <div class="form-group"><label>E-mail</label><input type="email" id="cadEmail" placeholder="seu@email.com"></div>
+      <div class="form-group"><label>Telefone</label><input type="text" id="cadTelefone" placeholder="(00) 00000-0000"></div>
+      <div class="form-group"><label>CPF</label><input type="text" id="cadCpf" placeholder="000.000.000-00"></div>
+      <div class="form-group"><label>Endereço de entrega</label><input type="text" id="cadEndereco" placeholder="Rua, número, bairro, cidade"></div>
+      <div class="form-group"><label>Senha</label><input type="password" id="cadSenha" placeholder="Mínimo 6 caracteres"></div>
+      <button class="btn btn-primary" onclick="fazerCadastro()"><i class="fa-solid fa-user-plus"></i> Criar conta</button>
+    </div>
+  </div>
+  <div class="voltar"><a href="loja.html"><i class="fa-solid fa-arrow-left"></i> Voltar à loja</a></div>
+</div>
+
+<script>
+const LOJA_CLIENTES = 'loja_clientes';
+const LOJA_SESSAO   = 'loja_sessao';
+const REDIRECT      = sessionStorage.getItem('loja_redirect') || 'loja.html';
+
+function get(k)    { try { return JSON.parse(localStorage.getItem(k)||'null'); } catch { return null; } }
+function set(k,v)  { localStorage.setItem(k, JSON.stringify(v)); }
+
+function mostrarTab(t) {
+  document.getElementById('painelLogin').style.display   = t==='login'    ? '' : 'none';
+  document.getElementById('painelCadastro').style.display= t==='cadastro' ? '' : 'none';
+  document.getElementById('tabLogin').classList.toggle('active',   t==='login');
+  document.getElementById('tabCadastro').classList.toggle('active', t==='cadastro');
+}
+
+function erroMsg(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.display = msg ? 'block' : 'none';
+}
+
+function fazerLogin() {
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const senha = document.getElementById('loginSenha').value.trim();
+  erroMsg('erroLogin','');
+  if (!email || !senha) { erroMsg('erroLogin','Preencha e-mail e senha.'); return; }
+  const lista = get(LOJA_CLIENTES) || [];
+  const c = lista.find(x => x.email.toLowerCase() === email && x.senha === senha);
+  if (!c) { erroMsg('erroLogin','E-mail ou senha incorretos.'); return; }
+  set(LOJA_SESSAO, c);
+  window.location.href = REDIRECT;
+}
+
+function mascaraTel(el) {
+  let v = el.value.replace(/\D/g,'').slice(0,11);
+  if (v.length>6) v=`(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7)}`;
+  else if (v.length>2) v=`(${v.slice(0,2)}) ${v.slice(2)}`;
+  else if (v.length>0) v=`(${v}`;
+  el.value = v;
+}
+function mascaraCPF(el) {
+  let v = el.value.replace(/\D/g,'').slice(0,11);
+  if(v.length>9) v=`${v.slice(0,3)}.${v.slice(3,6)}.${v.slice(6,9)}-${v.slice(9)}`;
+  else if(v.length>6) v=`${v.slice(0,3)}.${v.slice(3,6)}.${v.slice(6)}`;
+  else if(v.length>3) v=`${v.slice(0,3)}.${v.slice(3)}`;
+  el.value=v;
+}
+document.getElementById('cadTelefone').addEventListener('input', function(){ mascaraTel(this); });
+document.getElementById('cadCpf').addEventListener('input', function(){ mascaraCPF(this); });
+
+function fazerCadastro() {
+  const nome     = document.getElementById('cadNome').value.trim();
+  const email    = document.getElementById('cadEmail').value.trim().toLowerCase();
+  const telefone = document.getElementById('cadTelefone').value.trim();
+  const cpf      = document.getElementById('cadCpf').value.trim();
+  const endereco = document.getElementById('cadEndereco').value.trim();
+  const senha    = document.getElementById('cadSenha').value.trim();
+
+  erroMsg('erroCadastro','');
+  erroMsg('okCadastro','');
+
+  if (!nome||!email||!senha) { erroMsg('erroCadastro','Nome, e-mail e senha são obrigatórios.'); return; }
+  if (senha.length < 6)      { erroMsg('erroCadastro','Senha deve ter pelo menos 6 caracteres.'); return; }
+
+  const lista = get(LOJA_CLIENTES) || [];
+  if (lista.find(x => x.email.toLowerCase()===email)) {
+    erroMsg('erroCadastro','Este e-mail já está cadastrado. Faça login.');
+    return;
+  }
+
+  const novo = { id: Date.now(), nome, email, telefone, cpf, endereco, senha, dataCadastro: new Date().toLocaleDateString('pt-BR') };
+  lista.push(novo);
+  set(LOJA_CLIENTES, lista);
+  set(LOJA_SESSAO, novo);
+
+  // ─── Auto-salvar no ERP (erp_clientes) ───
+  const erpClientes = get('erp_clientes') || [];
+  const jaExisteErp = erpClientes.find(c => c.email === email || (cpf && c.cpf === cpf));
+  if (!jaExisteErp) {
+    const maxId = erpClientes.length > 0 ? Math.max(...erpClientes.map(x => x.id)) + 1 : 1;
+    erpClientes.push({ id: maxId, nome, email, telefone, cpf, endereco, status: 'ativo', origem: 'loja', dataCadastro: new Date().toLocaleDateString('pt-BR') });
+    set('erp_clientes', erpClientes);
+  }
+
+  const okEl = document.getElementById('okCadastro');
+  okEl.textContent = 'Conta criada com sucesso! Redirecionando…';
+  okEl.style.display = 'block';
+  setTimeout(() => window.location.href = REDIRECT, 1200);
+}
+
+document.getElementById('loginSenha').addEventListener('keypress', e => { if(e.key==='Enter') fazerLogin(); });
+</script>
+</body>
+</html>
