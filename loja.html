@@ -335,7 +335,7 @@ function removerCarrinho(id) {
 
 function mudQtd(id, delta) {
   const item = carrinho.find(x => x.produtoId === id);
-  if (!item) return;
+  if (!item) return; 
   item.qtd += delta;
   if (item.qtd <= 0) carrinho = carrinho.filter(x => x.produtoId !== id);
   renderizarCarrinho();
