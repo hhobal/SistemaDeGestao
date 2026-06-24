@@ -57,14 +57,14 @@ function mostrarSecao(secao) {
 
     if (secao === 'dashboard')    atualizarDashboard();
     if (secao === 'pedidos')      renderizarPedidos();
-    if (secao === 'relatorios')   atualizarRelatorios();
+    if (secao === 'relatorios')   renderizarRelatorios();
     if (secao === 'estoque')      atualizarEstoque();
     if (secao === 'financas')     atualizarFinancas();
     if (secao === 'agenda')       renderizarCalendario();
     if (secao === 'tarefas')      renderizarKanban();
     if (secao === 'notas')        renderizarNotas();
     if (secao === 'os')           renderizarOS();
-    if (secao === 'clientes')     renderizarClientes();
+    if (secao === 'clientes')     carregarClientesNaTela();
     if (secao === 'produtos')     renderizarProdutos();
     if (secao === 'fornecedores') renderizarFornecedores();
     if (secao === 'usuarios')     renderizarUsuarios();
@@ -137,7 +137,7 @@ function abrirModalCliente(id = null) {
     const modal = document.getElementById('modalCliente');
     modal._editId = id;
     if (id !== null) {
-        const c = carregarClientes().find(x => x.id === id);
+        const c = carregarClientes().find(x => String(x.id) === String(id));
         if (c) {
             document.getElementById('clienteNome').value = c.nome || '';
             document.getElementById('clienteEmail').value = c.email || '';
@@ -163,7 +163,7 @@ function abrirModalFornecedor(id = null) {
     const modal = document.getElementById('modalFornecedor');
     modal._editId = id;
     if (id !== null) {
-        const f = carregarFornecedores().find(x => x.id === id);
+        const f = carregarFornecedores().find(x => String(x.id) === String(id));
         if (f) {
             document.getElementById('fornecedorEmpresa').value = f.empresa || '';
             document.getElementById('fornecedorContato').value = f.contato || '';
@@ -188,7 +188,7 @@ function abrirModalProduto(id = null) {
     const modal = document.getElementById('modalProduto');
     modal._editId = id;
     if (id !== null) {
-        const p = carregarProdutos().find(x => x.id === id);
+        const p = carregarProdutos().find(x => String(x.id) === String(id));
         if (p) {
             document.getElementById('produtoNome').value = p.nome || '';
             document.getElementById('produtoCategoria').value = p.categoria || '';
@@ -206,10 +206,11 @@ function fecharModalProduto() { fecharModal('modalProduto'); }
 
 // ─── MODAIS ESTOQUE ────────────────────
 
-function abrirModalMovimento() {
+async function abrirModalMovimento() {
     const sel = document.getElementById('movProduto');
     sel.innerHTML = '';
-    carregarProdutos().forEach(p => {
+    const listaProdutos = await carregarProdutosDoBanco();
+    listaProdutos.forEach(p => {
         const opt = document.createElement('option');
         opt.value = p.id;
         opt.textContent = `${p.nome} (estoque: ${p.estoque || 0})`;
@@ -224,7 +225,7 @@ function fecharModalMovimento() { fecharModal('modalMovimento'); }
 
 // ─── MODAIS ORDEM DE SERVIÇO ───────────
 
-function abrirModalOS(id = null) {
+async function abrirModalOS(id = null) {
     ['osTitulo','osDescricao','osObservacao','osValor'].forEach(f => {
         const el = document.getElementById(f);
         if (el) el.value = '';
@@ -232,14 +233,19 @@ function abrirModalOS(id = null) {
     document.getElementById('osStatus').value = 'aberta';
     document.getElementById('osPrioridade').value = 'normal';
 
+    const [listaClientes, listaUsuarios] = await Promise.all([
+        carregarClientesDoBanco(),
+        carregarUsuariosDoBanco()
+    ]);
+
     const selC = document.getElementById('osCliente');
     const selR = document.getElementById('osResponsavel');
     selC.innerHTML = '<option value="">Selecione o cliente...</option>';
     selR.innerHTML = '<option value="">Selecione o responsável...</option>';
-    carregarClientes().forEach(c => {
+    listaClientes.forEach(c => {
         selC.innerHTML += `<option value="${c.id}">${c.nome}</option>`;
     });
-    carregarUsuarios().filter(u => u.perfil !== 'Visitante').forEach(u => {
+    listaUsuarios.filter(u => u.perfil !== 'Visitante').forEach(u => {
         selR.innerHTML += `<option value="${u.id}">${u.nome}</option>`;
     });
 
@@ -247,7 +253,7 @@ function abrirModalOS(id = null) {
     modal._editId = id;
 
     if (id !== null) {
-        const os = carregarOS().find(x => x.id === id);
+        const os = carregarOS().find(x => String(x.id) === String(id));
         if (os) {
             document.getElementById('osTitulo').value = os.titulo || '';
             document.getElementById('osDescricao').value = os.descricao || '';
@@ -255,8 +261,8 @@ function abrirModalOS(id = null) {
             document.getElementById('osValor').value = os.valor || '';
             document.getElementById('osStatus').value = os.status || 'aberta';
             document.getElementById('osPrioridade').value = os.prioridade || 'normal';
-            document.getElementById('osCliente').value = os.clienteId || '';
-            document.getElementById('osResponsavel').value = os.responsavelId || '';
+            document.getElementById('osCliente').value = os.clienteId ?? os.cliente?.id ?? '';
+            document.getElementById('osResponsavel').value = os.responsavelId ?? os.responsavel?.id ?? '';
         }
     }
     abrirModal('modalOS');
@@ -274,14 +280,14 @@ function abrirModalLancamento(id = null) {
     const modal = document.getElementById('modalLancamento');
     modal._editId = id;
     if (id !== null) {
-        const l = lancamentos.find(x => x.id === id);
+        const l = lancamentos.find(x => String(x.id) === String(id));
         if (l) {
             document.getElementById('lancDescricao').value = l.descricao || '';
             document.getElementById('lancValor').value = l.valor || '';
             document.getElementById('lancCategoria').value = l.categoria || '';
             document.getElementById('lancTipo').value = l.tipo || 'receita';
             document.getElementById('lancStatus').value = l.status || 'pago';
-            document.getElementById('lancData').value = l.dataISO || new Date().toISOString().split('T')[0];
+            document.getElementById('lancData').value = l.data ? String(l.data).split('T')[0] : new Date().toISOString().split('T')[0];
         }
     }
     abrirModal('modalLancamento');
@@ -302,7 +308,7 @@ function fecharModalEvento() { fecharModal('modalEvento'); }
 
 // ─── MODAIS TAREFA ─────────────────────
 
-function abrirModalTarefa(id = null) {
+async function abrirModalTarefa(id = null) {
     ['tarefaTitulo','tarefaDesc','tarefaDataLimite'].forEach(f => {
         const el = document.getElementById(f);
         if (el) el.value = '';
@@ -312,8 +318,9 @@ function abrirModalTarefa(id = null) {
 
     const selR = document.getElementById('tarefaResponsavel');
     if (selR) {
+        const listaUsuarios = await carregarUsuariosDoBanco();
         selR.innerHTML = '<option value="">Sem responsável</option>';
-        carregarUsuarios().forEach(u => {
+        listaUsuarios.forEach(u => {
             selR.innerHTML += `<option value="${u.id}">${u.nome}</option>`;
         });
     }
@@ -321,14 +328,14 @@ function abrirModalTarefa(id = null) {
     const modal = document.getElementById('modalTarefa');
     modal._editId = id;
     if (id !== null) {
-        const t = tarefas.find(x => x.id === id);
+        const t = tarefas.find(x => String(x.id) === String(id));
         if (t) {
             document.getElementById('tarefaTitulo').value = t.titulo || '';
-            document.getElementById('tarefaDesc').value = t.desc || '';
+            document.getElementById('tarefaDesc').value = t.descricao || '';
             document.getElementById('tarefaPrioridade').value = t.prioridade || 'media';
             document.getElementById('tarefaStatus').value = t.status || 'backlog';
-            if (document.getElementById('tarefaDataLimite')) document.getElementById('tarefaDataLimite').value = t.dataLimite || '';
-            if (document.getElementById('tarefaResponsavel')) document.getElementById('tarefaResponsavel').value = t.responsavelId || '';
+            if (document.getElementById('tarefaDataLimite')) document.getElementById('tarefaDataLimite').value = t.dataLimite ? String(t.dataLimite).split('T')[0] : '';
+            if (document.getElementById('tarefaResponsavel')) document.getElementById('tarefaResponsavel').value = t.responsavelId ?? t.responsavel?.id ?? '';
         }
     }
     abrirModal('modalTarefa');
@@ -344,7 +351,7 @@ function abrirModalNota(id = null) {
     const modal = document.getElementById('modalNota');
     modal._editId = id;
     if (id !== null) {
-        const n = notas.find(x => x.id === id);
+        const n = notas.find(x => String(x.id) === String(id));
         if (n) {
             document.getElementById('notaTitulo').value = n.titulo || '';
             document.getElementById('notaConteudo').value = n.conteudo || '';
@@ -360,17 +367,19 @@ function fecharModalNota() { fecharModal('modalNota'); }
 function abrirModalUsuario(id = null) {
     ['usuarioNome','usuarioUsername','usuarioSenha'].forEach(f => document.getElementById(f).value = '');
     document.getElementById('usuarioPerfil').value = 'Operador';
+    document.getElementById('usuarioAtivo').checked = true;
     const senhaLabel = document.getElementById('labelSenha');
     const modal = document.getElementById('modalUsuario');
     modal._editId = id;
 
     if (id !== null) {
         if (senhaLabel) senhaLabel.textContent = 'Nova senha (deixe em branco para manter)';
-        const u = carregarUsuarios().find(x => x.id === id);
+        const u = carregarUsuarios().find(x => String(x.id) === String(id));
         if (u) {
             document.getElementById('usuarioNome').value = u.nome || '';
             document.getElementById('usuarioUsername').value = u.usuario || '';
             document.getElementById('usuarioPerfil').value = u.perfil || 'Operador';
+            document.getElementById('usuarioAtivo').checked = u.ativo !== false;
         }
     } else {
         if (senhaLabel) senhaLabel.textContent = 'Senha';
@@ -398,6 +407,14 @@ function abrirBuscaGlobal() {
     document.getElementById('buscaGlobalResultados').innerHTML = '';
     abrirModal('modalBuscaGlobal');
     setTimeout(() => document.getElementById('buscaGlobalInput').focus(), 100);
+    // Pré-carrega os dados usados pela busca (cache pode estar vazio se a
+    // seção correspondente nunca foi visitada nesta sessão).
+    Promise.all([
+        carregarClientesDoBanco(),
+        carregarProdutosDoBanco(),
+        carregarOSDoBanco(),
+        carregarFornecedoresDoBanco()
+    ]).catch(() => {});
 }
 function fecharBuscaGlobal() { fecharModal('modalBuscaGlobal'); }
 
@@ -419,8 +436,8 @@ function executarBuscaGlobal() {
         }
     });
     carregarOS().forEach(os => {
-        if ((os.titulo||'').toLowerCase().includes(termo) || (os.nro||'').toLowerCase().includes(termo)) {
-            resultados.push({ tipo: 'O.S.', icone: 'fa-screwdriver-wrench', nome: os.titulo, sub: `#${os.nro} · ${os.cliente||''}`, secao: 'os', cor: 'var(--warning)' });
+        if ((os.titulo||'').toLowerCase().includes(termo) || (os.numero||'').toLowerCase().includes(termo)) {
+            resultados.push({ tipo: 'O.S.', icone: 'fa-screwdriver-wrench', nome: os.titulo, sub: `#${os.numero} · ${os.cliente?.nome||''}`, secao: 'os', cor: 'var(--warning)' });
         }
     });
     carregarFornecedores().forEach(f => {
@@ -447,26 +464,26 @@ function executarBuscaGlobal() {
 
 // ─── NOTIFICAÇÕES SINO ─────────────────
 
-function calcularAlertas() {
+async function calcularAlertas() {
     const alertas = [];
-    const prods = carregarProdutos();
+    const prods = await carregarProdutosDoBanco();
     const criticos = prods.filter(p => Number(p.estoque||0) <= Number(p.estoqueMin||0) && Number(p.estoqueMin||0) > 0);
     if (criticos.length > 0) alertas.push({ texto: `${criticos.length} produto(s) com estoque crítico`, icone: 'fa-warehouse', cor: 'var(--danger)', secao: 'estoque' });
 
     const hoje = new Date().toISOString().split('T')[0];
-    const lancs = carregarLancamentos();
-    const vencendo = lancs.filter(l => l.status === 'pendente' && l.dataISO && l.dataISO <= hoje);
+    const lancs = await carregarLancamentosDoBanco({ status: 'pendente' });
+    const vencendo = lancs.filter(l => l.status === 'pendente' && l.data && String(l.data).split('T')[0] <= hoje);
     if (vencendo.length > 0) alertas.push({ texto: `${vencendo.length} lançamento(s) vencido(s)`, icone: 'fa-wallet', cor: 'var(--warning)', secao: 'financas' });
 
-    const osList = carregarOS();
+    const osList = await carregarOSDoBanco({ status: 'aberta' });
     const osAbertas = osList.filter(os => os.status === 'aberta');
     if (osAbertas.length > 0) alertas.push({ texto: `${osAbertas.length} O.S. em aberto`, icone: 'fa-screwdriver-wrench', cor: 'var(--accent)', secao: 'os' });
 
     return alertas;
 }
 
-function renderizarAlertas() {
-    const alertas = calcularAlertas();
+async function renderizarAlertas() {
+    const alertas = await calcularAlertas();
     const badge = document.getElementById('notifBadge');
     const lista = document.getElementById('notifLista');
 
@@ -613,6 +630,11 @@ function atualizarTudo() {
 document.addEventListener('DOMContentLoaded', () => {
     mostrarSecao('dashboard');
     renderizarAlertas();
+
+    // Pré-carrega clientes e usuários: usados nos selects dos modais de
+    // O.S. e Tarefas, que podem ser abertos antes de visitar essas seções.
+    carregarClientesDoBanco();
+    carregarUsuariosDoBanco();
 
     // Busca global com Ctrl+K
     document.addEventListener('keydown', e => {

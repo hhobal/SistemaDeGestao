@@ -1,11 +1,15 @@
 // ======================================
-// USUÁRIOS
+// USUÁRIOS DO SISTEMA
 // ======================================
 
 let usuarios = [];
 
-function renderizarUsuarios() {
-    usuarios = carregarUsuarios();
+async function renderizarUsuarios() {
+    usuarios = await carregarUsuariosDoBanco();
+    _desenharTabelaUsuarios();
+}
+
+function _desenharTabelaUsuarios() {
     const tabela = document.getElementById('tabelaUsuarios');
     if (!tabela) return;
 
@@ -18,7 +22,7 @@ function renderizarUsuarios() {
     }
 
     tabela.innerHTML = usuarios.map(u => {
-        const euMesmo = sessao && sessao.id === u.id;
+        const euMesmo = sessao && String(sessao.id) === String(u.id);
         return `
         <tr>
             <td>${u.id}</td>
@@ -27,6 +31,7 @@ function renderizarUsuarios() {
                     <div class="user-avatar-mini">${(u.nome||'?').split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase()}</div>
                     <div>
                         <strong>${u.nome}</strong>${euMesmo ? ' <span style="font-size:10px;color:var(--accent)">(você)</span>' : ''}
+                        ${!u.ativo ? ' <span style="font-size:10px;color:var(--text-muted)">(inativo)</span>' : ''}
                     </div>
                 </div>
             </td>
@@ -40,7 +45,7 @@ function renderizarUsuarios() {
     }).join('');
 }
 
-function salvarUsuario() {
+async function salvarUsuario() {
     const modal  = document.getElementById('modalUsuario');
     const editId = modal._editId;
 
@@ -51,73 +56,63 @@ function salvarUsuario() {
 
     if (!nome || !login) { mostrarNotificacao('Nome e usuário são obrigatórios.', 'erro'); return; }
     if (!editId && !senha) { mostrarNotificacao('Informe uma senha.', 'erro'); return; }
+    if (senha && senha.length < 6) { mostrarNotificacao('A senha deve ter pelo menos 6 caracteres.', 'erro'); return; }
 
-    usuarios = carregarUsuarios();
+    const dados = { nome, usuario: login, perfil, ativo: document.getElementById('usuarioAtivo').checked };
+    if (senha) dados.senha = senha;
 
-    const duplicado = usuarios.find(u => u.usuario === login && u.id !== editId);
-    if (duplicado) { mostrarNotificacao('Já existe um usuário com este login.', 'erro'); return; }
-
-    if (editId !== null && editId !== undefined) {
-        const u = usuarios.find(x => x.id === editId);
-        if (u) {
-            u.nome   = nome;
-            u.usuario = login;
-            u.perfil = perfil;
-            if (senha) u.senha = senha;
-        }
-        registrarLog('Editar', 'Usuários', nome);
-    } else {
-        usuarios.push({ id: _nextId(usuarios), nome, usuario: login, senha, perfil });
-        registrarLog('Criar', 'Usuários', nome);
+    try {
+        await salvarUsuarioNoBanco(dados, editId);
+        fecharModalUsuario();
+        await renderizarUsuarios();
+        mostrarNotificacao(editId ? 'Usuário atualizado!' : 'Usuário criado!');
+    } catch (erro) {
+        mostrarNotificacao(erro.message || 'Não foi possível salvar o usuário.', 'erro');
     }
-
-    salvarUsuarios();
-    fecharModalUsuario();
-    renderizarUsuarios();
-    mostrarNotificacao(editId ? 'Usuário atualizado!' : 'Usuário criado!');
 }
 
 function excluirUsuario(id) {
-    const u = usuarios.find(x => x.id === id);
-    abrirConfirmacao(`Excluir o usuário "${u?.nome}"?`, () => {
-        usuarios = usuarios.filter(x => x.id !== id);
-        salvarUsuarios();
-        renderizarUsuarios();
-        registrarLog('Excluir', 'Usuários', u?.nome);
-        mostrarNotificacao('Usuário excluído.');
+    const u = usuarios.find(x => String(x.id) === String(id));
+    abrirConfirmacao(`Excluir o usuário "${u?.nome}"?`, async () => {
+        try {
+            await excluirUsuarioNoBanco(id);
+            await renderizarUsuarios();
+            mostrarNotificacao('Usuário excluído.');
+        } catch (erro) {
+            mostrarNotificacao(erro.message || 'Não foi possível excluir o usuário.', 'erro');
+        }
     }, 'Excluir usuário');
 }
 
 // ─── PERFIL PESSOAL ────────────────────
+// Usa /api/auth/me (perfil de quem está logado), não /api/usuarios.
 
-function salvarPerfil() {
-    const nome     = document.getElementById('perfilNome').value.trim();
+async function salvarPerfil() {
+    const nome       = document.getElementById('perfilNome').value.trim();
     const senhaAtual = document.getElementById('perfilSenhaAtual').value.trim();
     const novaSenha  = document.getElementById('perfilNovaSenha').value.trim();
 
     if (!nome) { mostrarNotificacao('Informe seu nome.', 'erro'); return; }
+    if (novaSenha && novaSenha.length < 6) { mostrarNotificacao('A nova senha deve ter pelo menos 6 caracteres.', 'erro'); return; }
+    if (novaSenha && !senhaAtual) { mostrarNotificacao('Informe a senha atual para definir uma nova.', 'erro'); return; }
 
-    const sessao = carregarSessao();
-    if (!sessao) return;
+    try {
+        const dados = { nome };
+        if (novaSenha) { dados.senhaAtual = senhaAtual; dados.novaSenha = novaSenha; }
 
-    usuarios = carregarUsuarios();
-    const u = usuarios.find(x => x.id === sessao.id);
-    if (!u) return;
+        const atualizado = await apiRequest('/auth/me', { method: 'PUT', body: JSON.stringify(dados) });
 
-    if (novaSenha) {
-        if (senhaAtual !== u.senha) { mostrarNotificacao('Senha atual incorreta.', 'erro'); return; }
-        u.senha = novaSenha;
+        const sessao = carregarSessao();
+        salvarSessao({ ...sessao, nome: atualizado.nome });
+
+        const elNome = document.getElementById('usuarioLogado');
+        if (elNome) elNome.textContent = atualizado.nome;
+        const iniciais = document.getElementById('userIniciais');
+        if (iniciais) iniciais.textContent = atualizado.nome.split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase();
+
+        fecharModalPerfil();
+        mostrarNotificacao('Perfil atualizado!');
+    } catch (erro) {
+        mostrarNotificacao(erro.message || 'Não foi possível atualizar o perfil.', 'erro');
     }
-    u.nome = nome;
-
-    salvarUsuarios();
-    salvarSessao({ ...sessao, nome });
-    document.getElementById('usuarioLogado').textContent = nome;
-    const iniciais = document.getElementById('userIniciais');
-    if (iniciais) iniciais.textContent = nome.split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase();
-
-    fecharModalPerfil();
-    mostrarNotificacao('Perfil atualizado!');
 }
-
-document.addEventListener('DOMContentLoaded', () => { usuarios = carregarUsuarios(); });

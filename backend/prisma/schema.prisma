@@ -1,0 +1,239 @@
+// ======================================
+// GESTÃOPRO — SCHEMA DO BANCO DE DADOS
+// ======================================
+// Para desenvolvimento: provider = "sqlite" (arquivo único, zero config)
+// Para produção no servidor da empresa: troque para "postgresql"
+// e ajuste DATABASE_URL no .env — nenhuma linha abaixo precisa mudar.
+//
+// Observação sobre enums: propositalmente usamos String (não enum do
+// Prisma) em campos como status/tipo/perfil. SQLite não suporta enum
+// nativo, e assim o schema funciona idêntico nos dois bancos. A
+// validação dos valores permitidos é feita na camada da API (zod).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── USUÁRIOS DO SISTEMA (equipe interna) ──────────────
+model Usuario {
+  id        Int      @id @default(autoincrement())
+  nome      String
+  usuario   String   @unique
+  senhaHash String
+  perfil    String   @default("Operador") // Administrador | Operador | Visitante
+  ativo     Boolean  @default(true)
+  criadoEm  DateTime @default(now())
+
+  ordensServico OrdemServico[] @relation("ResponsavelOS")
+  tarefas       Tarefa[]       @relation("ResponsavelTarefa")
+
+  @@map("usuarios")
+}
+
+// ─── CLIENTES (unifica cadastro do ERP + conta da loja) ─
+// Antes existiam duas listas separadas (erp_clientes e loja_clientes)
+// que precisavam ser "sincronizadas" manualmente. Aqui é uma única
+// tabela: senhaHash é preenchido só quando o cliente cria conta na loja.
+model Cliente {
+  id         Int      @id @default(autoincrement())
+  nome       String
+  email      String?  @unique
+  telefone   String?
+  cpf        String?  @unique
+  endereco   String?
+  observacao String?
+  status     String   @default("ativo") // ativo | inativo | inadimplente
+  senhaHash  String? // presente apenas se o cliente tem login na loja
+  origem     String   @default("manual") // manual | loja
+  criadoEm   DateTime @default(now())
+
+  pedidos       Pedido[]
+  ordensServico OrdemServico[]
+
+  @@map("clientes")
+}
+
+// ─── FORNECEDORES ───────────────────────────────────────
+model Fornecedor {
+  id        Int      @id @default(autoincrement())
+  empresa   String
+  contato   String?
+  telefone  String?
+  email     String?
+  cnpj      String?
+  categoria String?
+  criadoEm  DateTime @default(now())
+
+  @@map("fornecedores")
+}
+
+// ─── PRODUTOS / SERVIÇOS ────────────────────────────────
+model Produto {
+  id         Int      @id @default(autoincrement())
+  nome       String
+  codigo     String?  @unique
+  categoria  String?
+  preco      Float    @default(0)
+  custo      Float    @default(0)
+  estoque    Int      @default(0)
+  estoqueMin Int      @default(0)
+  descricao  String?
+  ativo      Boolean  @default(true)
+  criadoEm   DateTime @default(now())
+
+  itensPedido ItemPedido[]
+  movimentos  Movimento[]
+
+  @@map("produtos")
+}
+
+// ─── PEDIDOS (loja virtual) ─────────────────────────────
+model Pedido {
+  id              Int      @id @default(autoincrement())
+  numero          String   @unique
+  clienteId       Int
+  cliente         Cliente  @relation(fields: [clienteId], references: [id])
+  enderecoEntrega String?
+  total           Float    @default(0)
+  pagamento       String // cartao | pix | boleto
+  parcelas        Int      @default(1)
+  status          String   @default("pendente") // pendente|processando|enviado|entregue|cancelado
+  data            DateTime @default(now())
+
+  itens       ItemPedido[]
+  lancamentos Lancamento[]
+
+  @@map("pedidos")
+}
+
+model ItemPedido {
+  id            Int     @id @default(autoincrement())
+  pedidoId      Int
+  pedido        Pedido  @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  produtoId     Int
+  produto       Produto @relation(fields: [produtoId], references: [id])
+  nome          String // snapshot do nome no momento da compra
+  precoUnitario Float // snapshot do preço no momento da compra
+  quantidade    Int
+  subtotal      Float
+
+  @@map("itens_pedido")
+}
+
+// ─── ORDENS DE SERVIÇO ───────────────────────────────────
+model OrdemServico {
+  id            Int       @id @default(autoincrement())
+  numero        String    @unique
+  titulo        String
+  descricao     String?
+  observacao    String?
+  status        String    @default("aberta") // aberta|andamento|concluida|cancelada
+  prioridade    String    @default("normal") // baixa|normal|alta|urgente
+  valor         Float     @default(0)
+  clienteId     Int?
+  cliente       Cliente?  @relation(fields: [clienteId], references: [id])
+  responsavelId Int?
+  responsavel   Usuario?  @relation("ResponsavelOS", fields: [responsavelId], references: [id])
+  dataAbertura  DateTime  @default(now())
+  dataConclusao DateTime?
+
+  lancamentos Lancamento[]
+
+  @@map("ordens_servico")
+}
+
+// ─── ESTOQUE (histórico de movimentações) ───────────────
+model Movimento {
+  id          Int      @id @default(autoincrement())
+  produtoId   Int
+  produto     Produto  @relation(fields: [produtoId], references: [id])
+  tipo        String // entrada | saida
+  quantidade  Int
+  motivo      String?
+  responsavel String?
+  data        DateTime @default(now())
+
+  @@map("movimentos_estoque")
+}
+
+// ─── FINANÇAS ────────────────────────────────────────────
+model Lancamento {
+  id        Int      @id @default(autoincrement())
+  descricao String
+  categoria String?
+  tipo      String // receita | despesa
+  valor     Float
+  status    String   @default("pendente") // pago | pendente
+  data      DateTime @default(now())
+
+  pedidoId Int?
+  pedido   Pedido?       @relation(fields: [pedidoId], references: [id])
+  osId     Int?
+  os       OrdemServico? @relation(fields: [osId], references: [id])
+
+  @@map("lancamentos_financeiros")
+}
+
+// ─── AGENDA ──────────────────────────────────────────────
+model Evento {
+  id        Int      @id @default(autoincrement())
+  titulo    String
+  data      DateTime
+  hora      String?
+  descricao String?
+  tipo      String   @default("outro") // reuniao|tarefa|compromisso|outro
+
+  @@map("eventos")
+}
+
+// ─── TAREFAS (kanban) ────────────────────────────────────
+model Tarefa {
+  id            Int       @id @default(autoincrement())
+  titulo        String
+  descricao     String?
+  prioridade    String    @default("media") // baixa|media|alta
+  status        String    @default("backlog") // backlog|andamento|revisao|concluido
+  dataLimite    DateTime?
+  responsavelId Int?
+  responsavel   Usuario?  @relation("ResponsavelTarefa", fields: [responsavelId], references: [id])
+
+  @@map("tarefas")
+}
+
+// ─── NOTAS ───────────────────────────────────────────────
+model Nota {
+  id       Int      @id @default(autoincrement())
+  titulo   String
+  conteudo String?
+  cor      String?  @default("#1e2430")
+  criadoEm DateTime @default(now())
+
+  @@map("notas")
+}
+
+// ─── LOG DE AÇÕES (auditoria) ───────────────────────────
+model LogAcao {
+  id      Int      @id @default(autoincrement())
+  data    DateTime @default(now())
+  usuario String?
+  acao    String
+  modulo  String
+  detalhe String?
+
+  @@map("log_acoes")
+}
+
+// ─── CONTADORES (numeração sequencial de Pedidos e O.S.) ─
+// Evita condição de corrida ao gerar #0001, #0002... com múltiplos
+// usuários simultâneos (problema que existia na versão localStorage).
+model Contador {
+  chave String @id
+  valor Int    @default(0)
+
+  @@map("contadores")
+}

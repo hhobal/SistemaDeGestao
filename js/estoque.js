@@ -4,10 +4,26 @@
 
 let movimentos = [];
 
-function atualizarEstoque() {
-    movimentos = carregarMovimentos();
+async function atualizarEstoque() {
+    const [resumo, listaMovimentos] = await Promise.all([
+        carregarResumoEstoqueDoBanco(),
+        carregarMovimentosDoBanco()
+    ]);
+    movimentos = listaMovimentos;
     renderizarCardsEstoque();
     renderizarMovimentos();
+    _atualizarResumoEstoqueCards(resumo);
+}
+
+function _atualizarResumoEstoqueCards(resumo) {
+    // Os cards de resumo de estoque (se existirem na tela) usam os
+    // mesmos números que o backend já calcula em /api/estoque/resumo,
+    // evitando que o front recalcule (e divirja) essa lógica.
+    const el = id => document.getElementById(id);
+    if (el('estoqueTotalProdutos')) el('estoqueTotalProdutos').textContent = resumo.totalProdutos;
+    if (el('estoqueValorTotal')) el('estoqueValorTotal').textContent = Number(resumo.valorTotalEstoque||0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+    if (el('estoqueCriticos')) el('estoqueCriticos').textContent = resumo.criticos;
+    if (el('estoqueZerados')) el('estoqueZerados').textContent = resumo.zerados;
 }
 
 function renderizarCardsEstoque() {
@@ -48,8 +64,8 @@ function renderizarMovimentos() {
 
     const filtroTipo = document.getElementById('filtroMovTipo')?.value || '';
     const lista = filtroTipo
-        ? [...movimentos].filter(m => m.tipo === filtroTipo).reverse()
-        : [...movimentos].reverse();
+        ? movimentos.filter(m => m.tipo === filtroTipo)
+        : movimentos;
 
     if (lista.length === 0) {
         tabela.innerHTML = emptyState('Nenhuma movimentação registrada.', 'fa-arrows-rotate', 'Clique em "+ Registrar Movimento" para começar.');
@@ -59,58 +75,38 @@ function renderizarMovimentos() {
     tabela.innerHTML = lista.slice(0, 50).map(m => {
         const cor = m.tipo === 'entrada' ? 'var(--success)' : 'var(--danger)';
         const icone = m.tipo === 'entrada' ? 'fa-arrow-down' : 'fa-arrow-up';
+        const dataFmt = m.data ? new Date(m.data).toLocaleDateString('pt-BR') : '—';
         return `
         <tr>
-            <td>${m.data}</td>
-            <td>${m.produto}</td>
+            <td>${dataFmt}</td>
+            <td>${m.produto?.nome || '—'}</td>
             <td><span style="color:${cor}"><i class="fa-solid ${icone}" style="font-size:10px"></i> ${m.tipo}</span></td>
-            <td style="color:${cor};font-weight:700">${m.tipo === 'entrada' ? '+' : '-'}${m.qtd}</td>
+            <td style="color:${cor};font-weight:700">${m.tipo === 'entrada' ? '+' : '-'}${m.quantidade}</td>
             <td style="color:var(--text-muted);font-size:12px">${m.motivo || '—'}</td>
-            <td>${m.responsavel}</td>
+            <td>${m.responsavel || '—'}</td>
         </tr>`;
     }).join('');
 }
 
-function salvarMovimento() {
+async function salvarMovimento() {
     if (!validarCampos([{ id: 'movQtd' }])) return;
 
-    const prodId = parseInt(document.getElementById('movProduto').value);
-    const tipo   = document.getElementById('movTipo').value;
-    const qtd    = parseInt(document.getElementById('movQtd').value);
-    const motivo = document.getElementById('movMotivo').value.trim();
+    const produtoId = parseInt(document.getElementById('movProduto').value);
+    const tipo      = document.getElementById('movTipo').value;
+    const quantidade = parseInt(document.getElementById('movQtd').value);
+    const motivo     = document.getElementById('movMotivo').value.trim();
 
-    if (!prodId || !qtd || qtd <= 0) { mostrarNotificacao('Preencha todos os campos.', 'erro'); return; }
+    if (!produtoId || !quantidade || quantidade <= 0) { mostrarNotificacao('Preencha todos os campos.', 'erro'); return; }
 
-    const prods = carregarProdutos();
-    const prod = prods.find(p => p.id === prodId);
-    if (!prod) return;
-
-    const estoqueAtual = Number(prod.estoque || 0);
-    if (tipo === 'saida' && qtd > estoqueAtual) {
-        mostrarNotificacao(`Estoque insuficiente. Disponível: ${estoqueAtual}`, 'erro');
-        return;
+    try {
+        await criarMovimentoNoBanco({ produtoId, tipo, quantidade, motivo });
+        fecharModalMovimento();
+        await atualizarEstoque();
+        if (typeof atualizarTudo === 'function') atualizarTudo();
+        mostrarNotificacao(`Estoque ${tipo === 'entrada' ? 'adicionado' : 'baixado'}!`);
+    } catch (erro) {
+        mostrarNotificacao(erro.message || 'Não foi possível registrar a movimentação.', 'erro');
     }
-
-    prod.estoque = tipo === 'entrada' ? estoqueAtual + qtd : estoqueAtual - qtd;
-    _set(STORAGE_KEYS.PRODUTOS, prods);
-    if (typeof produtos !== 'undefined') produtos = prods;
-
-    const sessao = carregarSessao();
-    movimentos = carregarMovimentos();
-    movimentos.push({
-        id: Date.now(),
-        data: new Date().toLocaleDateString('pt-BR'),
-        produto: prod.nome,
-        tipo, qtd, motivo,
-        responsavel: sessao?.nome || 'Sistema'
-    });
-    salvarMovimentos();
-    registrarLog(tipo === 'entrada' ? 'Entrada estoque' : 'Saída estoque', 'Estoque', `${qtd}x ${prod.nome}${motivo ? ` — ${motivo}` : ''}`);
-
-    fecharModalMovimento();
-    atualizarEstoque();
-    atualizarTudo();
-    mostrarNotificacao(`Estoque ${tipo === 'entrada' ? 'adicionado' : 'baixado'}!`);
 }
 
 document.addEventListener('DOMContentLoaded', () => {

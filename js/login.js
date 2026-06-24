@@ -2,39 +2,28 @@
 // LOGIN / SESSÃO / PERMISSÕES
 // ======================================
 
-// ─── USUÁRIO PADRÃO ────────────────────
-
-function criarUsuarioPadrao() {
-    const lista = carregarUsuarios();
-    if (lista.length > 0) return;
-    const padroes = [
-        { id: 1, nome: 'Administrador', usuario: 'admin',    senha: 'admin123', perfil: 'Administrador' },
-        { id: 2, nome: 'Operador',      usuario: 'operador', senha: '123456',   perfil: 'Operador' },
-        { id: 3, nome: 'Visitante',     usuario: 'visitante',senha: '123456',   perfil: 'Visitante' }
-    ];
-    _set(STORAGE_KEYS.USUARIOS, padroes);
-}
-
 // ─── LOGIN ─────────────────────────────
 
-function login() {
+async function login() {
     const u = document.getElementById('usuario')?.value.trim();
     const s = document.getElementById('senha')?.value.trim();
     if (!u || !s) { mostrarErroLogin('Preencha usuário e senha.'); return; }
 
-    const usuarios = carregarUsuarios();
-    const encontrado = usuarios.find(x => x.usuario === u && x.senha === s);
+    try {
+        const dados = await apiRequest('/auth/login', {
+            method: 'POST',
+            body: JSON.stringify({ usuario: u, senha: s })
+        });
 
-    if (!encontrado) {
-        mostrarErroLogin('Usuário ou senha inválidos.');
+        const sessao = { ...dados.usuario, token: dados.token };
+        salvarSessao(sessao);
+        registrarLog('Login', 'Sistema', 'Acesso via login');
+        window.location.href = 'index.html';
+    } catch (erro) {
+        mostrarErroLogin(erro.message || 'Usuário ou senha inválidos.');
         document.getElementById('senha').value = '';
         document.getElementById('senha').focus();
-        return;
     }
-
-    salvarSessao(encontrado);
-    registrarLog('Login', 'Sistema', `Acesso via login`);
-    window.location.href = 'index.html';
 }
 
 function mostrarErroLogin(msg) {
@@ -46,7 +35,16 @@ function mostrarErroLogin(msg) {
 // ─── LOGOUT ────────────────────────────
 
 function logout() {
-    abrirConfirmacao('Deseja realmente sair do sistema?', () => {
+    abrirConfirmacao('Deseja realmente sair do sistema?', async () => {
+        try {
+            const token = getAuthToken();
+            if (token) {
+                await apiRequest('/auth/logout', { method: 'POST' });
+            }
+        } catch (erro) {
+            console.warn('Falha ao encerrar sessão no backend:', erro.message);
+        }
+
         registrarLog('Logout', 'Sistema');
         limparSessao();
         window.location.href = 'login.html';
@@ -124,7 +122,6 @@ function configurarEnterLogin() {
 // ─── INICIALIZAÇÃO ─────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
-    criarUsuarioPadrao();
     verificarSessao();
     exibirUsuarioLogado();
     configurarEnterLogin();

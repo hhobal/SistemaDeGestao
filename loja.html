@@ -273,29 +273,29 @@ input:focus,select:focus{outline:none;border-color:var(--accent)}
 
 <div class="toast" id="toast"></div>
 
+<script src="js/config.js"></script>
+<script src="js/loja-api.js"></script>
 <script>
-// ─── STORAGE ───────────────────────────
-const SK_PRODS   = 'erp_produtos';
-const SK_PEDIDOS = 'erp_pedidos';
-const SK_MOVS    = 'erp_movimentos';
-const SK_LANCS   = 'erp_lancamentos';
-const LOJA_SESSAO   = 'loja_sessao';
-const LOJA_CLIENTES = 'loja_clientes';
+// ======================================
+// LOJA VIRTUAL — INTEGRADA COM A API
+// ======================================
+// Antes, este catálogo lia/gravava tudo em localStorage (chaves
+// 'erp_produtos', 'erp_pedidos', 'loja_sessao'), então um pedido feito
+// aqui nunca chegava ao banco nem ao painel administrativo. Agora o
+// catálogo vem de GET /api/loja/produtos e o pedido é criado de
+// verdade via POST /api/loja/pedidos (ver js/loja-api.js).
 
-function get(k)   { try { return JSON.parse(localStorage.getItem(k)||'null'); } catch { return null; } }
-function set(k,v) { localStorage.setItem(k, JSON.stringify(v)); }
-function fmt(v)   { return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
-function nextId(arr){ return arr.length>0 ? Math.max(...arr.map(x=>x.id))+1 : 1; }
+function fmt(v) { return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
 
 // ─── SESSÃO ────────────────────────────
-let sessaoCliente = null;
 
-function carregarSessao() {
-  sessaoCliente = get(LOJA_SESSAO);
+function carregarSessaoNaTela() {
+  const sessaoCliente = lojaCarregarCliente();
   const nav = document.getElementById('navUser');
   if (sessaoCliente) {
     nav.innerHTML = `
       <span style="font-size:13px;color:var(--muted)">Olá, <strong style="color:var(--text)">${sessaoCliente.nome.split(' ')[0]}</strong></span>
+      <a class="nav-btn" href="loja-conta.html"><i class="fa-solid fa-receipt"></i> Meus pedidos</a>
       <button class="nav-btn" onclick="fazerLogout()"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>`;
   } else {
     nav.innerHTML = `<a class="nav-btn nav-btn-accent" href="loja-conta.html" onclick="sessionStorage.setItem('loja_redirect','loja.html')"><i class="fa-solid fa-user"></i> Entrar / Cadastrar</a>`;
@@ -303,18 +303,18 @@ function carregarSessao() {
 }
 
 function fazerLogout() {
-  localStorage.removeItem(LOJA_SESSAO);
-  sessaoCliente = null;
-  carregarSessao();
+  lojaLogout();
+  carregarSessaoNaTela();
   toast('Você saiu da conta.');
 }
 
-// ─── CARRINHO ──────────────────────────
+// ─── CARRINHO (continua local até o checkout ser confirmado) ──
+
 let carrinho = [];
+let produtosCatalogo = []; // cache da última busca ao catálogo, usado pelo carrinho/checkout
 
 function addCarrinho(id) {
-  const prods = get(SK_PRODS) || [];
-  const p = prods.find(x => x.id === id);
+  const p = produtosCatalogo.find(x => x.id === id);
   if (!p || Number(p.estoque||0) <= 0) return;
   const item = carrinho.find(x => x.produtoId === id);
   const maxQtd = Number(p.estoque);
@@ -324,20 +324,23 @@ function addCarrinho(id) {
   } else {
     carrinho.push({ produtoId: id, nome: p.nome, preco: Number(p.preco), qtd: 1 });
   }
+  lojaSalvarCarrinho(carrinho);
   renderizarCarrinho();
   toast(`${p.nome} adicionado ao carrinho!`);
 }
 
 function removerCarrinho(id) {
   carrinho = carrinho.filter(x => x.produtoId !== id);
+  lojaSalvarCarrinho(carrinho);
   renderizarCarrinho();
 }
 
 function mudQtd(id, delta) {
   const item = carrinho.find(x => x.produtoId === id);
-  if (!item) return; 
+  if (!item) return;
   item.qtd += delta;
   if (item.qtd <= 0) carrinho = carrinho.filter(x => x.produtoId !== id);
+  lojaSalvarCarrinho(carrinho);
   renderizarCarrinho();
 }
 
@@ -381,43 +384,57 @@ function fecharCarrinho() {
   document.getElementById('carrinhoOverlay').classList.remove('open');
 }
 
-// ─── PRODUTOS ──────────────────────────
+// ─── PRODUTOS (vindos da API) ──────────
+
 let catAtiva = '';
+let buscaDebounceId = null;
 
 function setCategoria(cat) {
   catAtiva = cat;
   document.querySelectorAll('.filtro-tag').forEach(t => t.classList.toggle('active', t.dataset.cat === cat));
-  renderizarProdutos();
+  carregarProdutosNaTela();
 }
 
-function filtrarProdutos() { renderizarProdutos(); }
+function filtrarProdutos() {
+  clearTimeout(buscaDebounceId);
+  buscaDebounceId = setTimeout(() => carregarProdutosNaTela(), 300);
+}
 
-function renderizarProdutos() {
-  const prods = (get(SK_PRODS) || []).filter(p => Number(p.estoque||0) > 0 && Number(p.preco||0) > 0);
-  const busca = document.getElementById('buscaProd').value.toLowerCase();
-  const grid  = document.getElementById('gridProdutos');
+async function carregarProdutosNaTela() {
+  const grid = document.getElementById('gridProdutos');
+  const busca = document.getElementById('buscaProd').value.trim();
 
-  // Filtros de categoria
-  const cats = [...new Set(prods.map(p => p.categoria).filter(Boolean))];
+  try {
+    const [produtos, categorias] = await Promise.all([
+      lojaCarregarProdutos({ busca, categoria: catAtiva }),
+      lojaCarregarCategorias()
+    ]);
+    produtosCatalogo = produtos;
+    _desenharFiltrosCategorias(categorias);
+    _desenharGridProdutos(produtos);
+  } catch (erro) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--danger);font-size:13px"><i class="fa-solid fa-triangle-exclamation" style="font-size:28px;display:block;margin-bottom:10px"></i>${erro.message}</div>`;
+  }
+}
+
+function _desenharFiltrosCategorias(categorias) {
   const filtrosCont = document.getElementById('filtrosCats');
   filtrosCont.innerHTML = `<span class="filtro-tag ${!catAtiva?'active':''}" onclick="setCategoria('')" data-cat="">Todos</span>`;
-  cats.forEach(c => {
+  categorias.forEach(c => {
     filtrosCont.innerHTML += `<span class="filtro-tag ${catAtiva===c?'active':''}" onclick="setCategoria('${c}')" data-cat="${c}">${c}</span>`;
   });
+}
 
+function _desenharGridProdutos(produtos) {
+  const grid = document.getElementById('gridProdutos');
   const emojiCat = { 'Peças':'🔧','Serviço de mão de obra':'👷','Insumos':'🧪','Equipamentos':'⚙️','Acessórios':'🎁','Outros':'📦' };
 
-  const filtrados = prods.filter(p =>
-    (!catAtiva || p.categoria === catAtiva) &&
-    (!busca || (p.nome||'').toLowerCase().includes(busca) || (p.codigo||'').toLowerCase().includes(busca))
-  );
-
-  if (filtrados.length === 0) {
+  if (produtos.length === 0) {
     grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--muted);font-size:13px"><i class="fa-solid fa-magnifying-glass" style="font-size:28px;display:block;margin-bottom:10px;opacity:.3"></i>Nenhum produto encontrado.</div>`;
     return;
   }
 
-  grid.innerHTML = filtrados.map(p => {
+  grid.innerHTML = produtos.map(p => {
     const sem = Number(p.estoque||0) <= (Number(p.estoqueMin||0) * 1.2 + 2);
     return `
     <div class="produto-card" onclick="verProduto(${p.id})">
@@ -441,9 +458,7 @@ function renderizarProdutos() {
 }
 
 function verProduto(id) {
-  const p = (get(SK_PRODS)||[]).find(x=>x.id===id);
-  if (!p) return;
-  // Só adiciona direto ao carrinho — em produção seria uma página de detalhe
+  // Só adiciona direto ao carrinho — em uma versão futura seria uma página de detalhe.
   addCarrinho(id);
   toggleCarrinho();
 }
@@ -454,7 +469,7 @@ let pagSelecionado = 'cartao';
 
 function iniciarCheckout() {
   if (carrinho.length === 0) { toast('Adicione produtos ao carrinho primeiro.'); return; }
-  if (!sessaoCliente) {
+  if (!lojaClienteLogado()) {
     sessionStorage.setItem('loja_redirect','loja.html');
     window.location.href = 'loja-conta.html';
     return;
@@ -467,7 +482,8 @@ function iniciarCheckout() {
   preencherClienteInfo();
   preencherParcelas();
   preencherBoleto();
-  document.getElementById('ckEndereco').value = sessaoCliente.endereco || '';
+  const sessaoCliente = lojaCarregarCliente();
+  document.getElementById('ckEndereco').value = sessaoCliente?.endereco || '';
   document.getElementById('modalCheckout').classList.add('open');
 }
 
@@ -476,6 +492,7 @@ function fecharCheckout() {
 }
 
 function preencherClienteInfo() {
+  const sessaoCliente = lojaCarregarCliente();
   document.getElementById('clienteInfo').innerHTML = `
     <strong>${sessaoCliente.nome}</strong><br>
     <span style="font-size:12px;color:var(--muted)">${sessaoCliente.email}</span>`;
@@ -513,6 +530,7 @@ function atualizarSteps() {
   }
   document.getElementById('btnVoltar').style.display = stepAtual > 1 ? '' : 'none';
   const btn = document.getElementById('btnAvancar');
+  btn.disabled = false;
   if (stepAtual === 3) { btn.innerHTML = '<i class="fa-solid fa-check"></i> Confirmar pedido'; }
   else { btn.innerHTML = 'Continuar <i class="fa-solid fa-arrow-right"></i>'; }
 }
@@ -558,57 +576,45 @@ function preencherResumo() {
     <div class="resumo-total"><span>Total</span><span style="color:var(--success)">${fmt(total)}</span></div>`;
 }
 
-function finalizarPedido() {
-  const pedidos = get(SK_PEDIDOS) || [];
-  const nro = pedidos.length > 0
-    ? String(Math.max(...pedidos.map(x=>parseInt(x.nro)||0))+1).padStart(4,'0')
-    : '0001';
-
-  const itens = carrinho.map(i => ({
-    produtoId: i.produtoId,
-    nome: i.nome,
-    precoUnitario: i.preco,
-    qtd: i.qtd,
-    subtotal: i.preco * i.qtd
-  }));
+async function finalizarPedido() {
+  const btn = document.getElementById('btnAvancar');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando pedido...';
 
   const parcelas = pagSelecionado === 'cartao' ? parseInt(document.getElementById('ckParcelas').value) : 1;
 
-  const pedido = {
-    id: Date.now(),
-    nro,
-    clienteId: sessaoCliente.id,
-    clienteNome: sessaoCliente.nome,
-    clienteEmail: sessaoCliente.email,
-    clienteTelefone: sessaoCliente.telefone || '',
+  const payload = {
+    itensCarrinho: carrinho.map(i => ({ produtoId: i.produtoId, quantidade: i.qtd })),
     enderecoEntrega: document.getElementById('ckEndereco').value.trim(),
-    itens,
-    total: totalCarrinho(),
     pagamento: pagSelecionado,
-    parcelas,
-    status: 'pendente',
-    data: new Date().toLocaleDateString('pt-BR'),
-    dataISO: new Date().toISOString().split('T')[0]
+    parcelas
   };
 
-  pedidos.push(pedido);
-  set(SK_PEDIDOS, pedidos);
+  try {
+    const pedido = await lojaCriarPedido(payload);
 
-  // Limpar carrinho e mostrar sucesso
-  carrinho = [];
-  renderizarCarrinho();
-  document.getElementById('nroPedidoSucesso').textContent = `Pedido #${nro}`;
-  [1,2,3].forEach(i => document.getElementById('painel'+i).style.display='none');
-  document.getElementById('painelSucesso').style.display='';
-  document.getElementById('checkoutFooter').style.display='none';
-  // Marcar steps como done
-  ['step1','step2','step3'].forEach(s => {
-    document.getElementById(s).classList.remove('active');
-    document.getElementById(s).classList.add('done');
-  });
+    carrinho = [];
+    lojaLimparCarrinho();
+    renderizarCarrinho();
+    document.getElementById('nroPedidoSucesso').textContent = `Pedido #${pedido.numero}`;
+    [1,2,3].forEach(i => document.getElementById('painel'+i).style.display='none');
+    document.getElementById('painelSucesso').style.display='';
+    document.getElementById('checkoutFooter').style.display='none';
+    ['step1','step2','step3'].forEach(s => {
+      document.getElementById(s).classList.remove('active');
+      document.getElementById(s).classList.add('done');
+    });
+  } catch (erro) {
+    // Erro comum aqui: estoque insuficiente entre o momento em que o
+    // produto foi visto na vitrine e a confirmação do pedido (o backend
+    // sempre revalida o estoque na hora de criar o pedido).
+    toast(erro.message || 'Não foi possível finalizar o pedido.');
+    btn.disabled = false;
+    atualizarSteps();
+  }
 }
 
-// ─── MÁSCARAS ──────────────────────────
+// ─── MÁSCARAS (só visuais — o pagamento é simulado; o backend não recebe dados de cartão) ──
 function mascaraCartao(el) {
   let v = el.value.replace(/\D/g,'').slice(0,16);
   v = v.match(/.{1,4}/g)?.join(' ') || v;
@@ -635,8 +641,10 @@ window.addEventListener('click', e => {
 });
 document.addEventListener('keydown', e => { if(e.key==='Escape') fecharCheckout(); });
 
-carregarSessao();
-renderizarProdutos();
+carrinho = lojaCarregarCarrinho();
+carregarSessaoNaTela();
+renderizarCarrinho();
+carregarProdutosNaTela();
 </script>
 </body>
 </html>

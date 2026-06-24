@@ -31,14 +31,15 @@
       </p>
     </div>
   </div>
-<script src="js/localstorage.js"></script>
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
 <script src="js/tema.js"></script>
 <script>
-  // Stub para mostrarNotificacao não quebrar antes do app.js carregar
-  function mostrarNotificacao() {}
-  function registrarLog() {}
-  function _set(k,v){ localStorage.setItem(k,JSON.stringify(v)); }
+  // Stub leve só para mostrarNotificacao não quebrar nesta tela
+  // (o toast completo só existe depois que app.js carrega, no painel).
+  function mostrarNotificacao(msg) { console.log(msg); }
 </script>
 <script src="js/login.js"></script>
+
 </body>
 </html>

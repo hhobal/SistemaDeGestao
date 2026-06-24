@@ -9,7 +9,7 @@
     if (!sessao) window.location.replace('login.html');
   } catch(e) { window.location.replace('login.html'); }
 </script>
-<title>Sistema de Gestão V6</title>
+<title>Sistema de Gestão</title>
 <link rel="stylesheet" href="css/style.css">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -24,7 +24,9 @@
   <div class="sidebar-header">
     <div class="sidebar-brand">
       <div class="sidebar-brand-icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
-      <span class="sidebar-brand-text">GestãoPro</span>
+      <span class="sidebar-brand-text">Gestão
+
+      </span>
     </div>
     <button class="toggle-sidebar" onclick="toggleSidebar()" title="Recolher menu">
       <i class="fa-solid fa-chevron-left"></i>
@@ -104,7 +106,7 @@
   <!-- TOPBAR -->
   <header class="topbar">
     <div class="topbar-title">
-      <h2 id="paginaTitulo">Dashboard</h2>
+      <h2 id="paginaTitulo">Página Inicial</h2>
       <p id="paginaSubtitulo">Visão geral do sistema</p>
     </div>
 
@@ -199,9 +201,6 @@
           <option value="entregue">Entregue</option>
           <option value="cancelado">Cancelado</option>
         </select>
-        <button class="btn-secondary" onclick="sincronizarClientesLoja()" title="Importar clientes da loja para o cadastro">
-          <i class="fa-solid fa-rotate"></i> Sincronizar clientes
-        </button>
         <a href="loja.html" target="_blank" class="btn-primary" style="text-decoration:none;display:flex;align-items:center;gap:6px">
           <i class="fa-solid fa-store"></i> Abrir loja
         </a>
@@ -227,7 +226,7 @@
           <option value="inativo">Inativo</option>
           <option value="inadimplente">Inadimplente</option>
         </select>
-        <span style="font-size:12px;color:var(--text-muted)">Total: <strong id="totalClientes">0</strong></span>
+        <span style="font-size:12px;color:var(--text-muted)">Total: <strong id="totalClientesLista">0</strong></span>
         <button class="btn-primary" onclick="abrirModalCliente()"><i class="fa-solid fa-plus"></i> Novo Cliente</button>
       </div>
       <div class="tabela-container">
@@ -794,6 +793,12 @@
           <option value="Visitante">Visitante (somente leitura)</option>
         </select>
       </div>
+      <div class="form-group">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="usuarioAtivo" checked style="width:auto">
+          Usuário ativo (desmarque para bloquear o acesso sem excluir)
+        </label>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn-secondary" onclick="fecharModalUsuario()">Cancelar</button>
@@ -858,7 +863,8 @@
      SCRIPTS
 ════════════════════════════════════════════ -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="js/localstorage.js"></script>
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
 <script src="js/tema.js"></script>
 <script src="js/login.js"></script>
 <script src="js/app.js"></script>

@@ -6,8 +6,21 @@ let eventos = [];
 let calMes = new Date().getMonth();
 let calAno = new Date().getFullYear();
 
-function renderizarCalendario() {
-    eventos = carregarEventos();
+function _dataLocalISO(data) {
+    // O backend devolve `data` como DateTime ISO completo (ex.: 2026-06-23T00:00:00.000Z).
+    // Para comparar com o grid do calendário (que trabalha em "yyyy-mm-dd" local),
+    // usamos só a parte da data, sem conversão de fuso.
+    return String(data).split('T')[0];
+}
+
+async function renderizarCalendario() {
+    const inicio = new Date(calAno, calMes, 1).toISOString();
+    const fim = new Date(calAno, calMes + 1, 0, 23, 59, 59).toISOString();
+    eventos = await carregarEventosDoBanco({ inicio, fim });
+    _desenharCalendario();
+}
+
+function _desenharCalendario() {
     const grid  = document.getElementById('calendarGrid');
     const label = document.getElementById('mesAno');
     if (!grid) return;
@@ -30,11 +43,10 @@ function renderizarCalendario() {
     for (let d = 1; d <= totalDias; d++) {
         const isHoje  = hoje.getDate() === d && hoje.getMonth() === calMes && hoje.getFullYear() === calAno;
         const dataStr = `${calAno}-${String(calMes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-        const evsDia  = eventos.filter(e => e.data === dataStr);
+        const evsDia  = eventos.filter(e => _dataLocalISO(e.data) === dataStr);
         const dotHtml = evsDia.length > 0 ? `<div class="cal-dots">${evsDia.slice(0,3).map(() => '<span class="cal-dot"></span>').join('')}</div>` : '';
         const evHtml  = evsDia.slice(0,2).map(e => `<div class="cal-event" title="${e.titulo}">${e.titulo}</div>`).join('');
-        const dataISO = dataStr;
-        grid.innerHTML += `<div class="cal-day${isHoje ? ' today' : ''}" onclick="abrirModalEvento('${dataISO}')" title="Adicionar evento">${dotHtml}<div class="cal-date">${d}</div>${evHtml}</div>`;
+        grid.innerHTML += `<div class="cal-day${isHoje ? ' today' : ''}" onclick="abrirModalEvento('${dataStr}')" title="Adicionar evento">${dotHtml}<div class="cal-date">${d}</div>${evHtml}</div>`;
     }
 
     renderizarTabelaEventos();
@@ -44,7 +56,9 @@ function renderizarTabelaEventos() {
     const tabela = document.getElementById('tabelaEventos');
     if (!tabela) return;
     const hoje = new Date().toISOString().split('T')[0];
-    const proximos = eventos.filter(e => e.data >= hoje).sort((a,b) => a.data.localeCompare(b.data));
+    const proximos = eventos
+        .filter(e => _dataLocalISO(e.data) >= hoje)
+        .sort((a,b) => _dataLocalISO(a.data).localeCompare(_dataLocalISO(b.data)));
 
     if (proximos.length === 0) {
         tabela.innerHTML = emptyState('Nenhum evento próximo.', 'fa-calendar-days', 'Clique em um dia no calendário para adicionar.');
@@ -53,7 +67,7 @@ function renderizarTabelaEventos() {
 
     const cores = { reuniao: 'var(--accent)', tarefa: 'var(--warning)', compromisso: 'var(--success)', outro: 'var(--text-muted)' };
     tabela.innerHTML = proximos.map(e => {
-        const d = new Date(e.data + 'T12:00:00').toLocaleDateString('pt-BR');
+        const d = new Date(_dataLocalISO(e.data) + 'T12:00:00').toLocaleDateString('pt-BR');
         return `
         <tr>
             <td>${d}</td>
@@ -65,30 +79,37 @@ function renderizarTabelaEventos() {
     }).join('');
 }
 
-function salvarEvento() {
+async function salvarEvento() {
     if (!validarCampos([{ id: 'eventoTitulo' }, { id: 'eventoData' }])) return;
 
-    eventos = carregarEventos();
-    eventos.push({
-        id:        Date.now(),
+    const dataISO = document.getElementById('eventoData').value;
+    const dados = {
         titulo:    document.getElementById('eventoTitulo').value.trim(),
-        data:      document.getElementById('eventoData').value,
+        data:      new Date(dataISO + 'T12:00:00').toISOString(),
         hora:      document.getElementById('eventoHora').value,
         descricao: document.getElementById('eventoDescricao').value.trim(),
         tipo:      document.getElementById('eventoTipo').value
-    });
-    salvarEventosList();
-    fecharModalEvento();
-    renderizarCalendario();
-    mostrarNotificacao('Evento adicionado!');
+    };
+
+    try {
+        await salvarEventoNoBanco(dados);
+        fecharModalEvento();
+        await renderizarCalendario();
+        mostrarNotificacao('Evento adicionado!');
+    } catch (erro) {
+        mostrarNotificacao(erro.message || 'Não foi possível salvar o evento.', 'erro');
+    }
 }
 
 function excluirEvento(id) {
-    abrirConfirmacao('Excluir este evento?', () => {
-        eventos = eventos.filter(e => e.id !== id);
-        salvarEventosList();
-        renderizarCalendario();
-        mostrarNotificacao('Evento excluído.');
+    abrirConfirmacao('Excluir este evento?', async () => {
+        try {
+            await excluirEventoNoBanco(id);
+            await renderizarCalendario();
+            mostrarNotificacao('Evento excluído.');
+        } catch (erro) {
+            mostrarNotificacao(erro.message || 'Não foi possível excluir o evento.', 'erro');
+        }
     });
 }
 

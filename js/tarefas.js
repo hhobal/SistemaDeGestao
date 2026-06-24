@@ -12,8 +12,12 @@ const COLUNAS_KANBAN = [
     { id: 'concluido', label: 'Concluído',     icone: 'fa-circle-check',   cor: 'var(--success)' }
 ];
 
-function renderizarKanban() {
-    tarefas = carregarTarefas();
+async function renderizarKanban() {
+    tarefas = await carregarTarefasDoBanco();
+    _desenharKanban();
+}
+
+function _desenharKanban() {
     const board = document.getElementById('kanbanBoard');
     if (!board) return;
 
@@ -22,8 +26,9 @@ function renderizarKanban() {
         const cards = lista.map(t => {
             const priCor = { alta: 'var(--danger)', media: 'var(--warning)', baixa: 'var(--success)' }[t.prioridade] || 'var(--text-muted)';
             const hoje = new Date().toISOString().split('T')[0];
-            const atrasada = t.dataLimite && t.dataLimite < hoje && t.status !== 'concluido';
-            const resp = t.responsavelId ? carregarUsuarios().find(u => String(u.id) === String(t.responsavelId))?.nome : null;
+            const dataLimiteISO = t.dataLimite ? String(t.dataLimite).split('T')[0] : null;
+            const atrasada = dataLimiteISO && dataLimiteISO < hoje && t.status !== 'concluido';
+            const resp = t.responsavel?.nome || null;
             return `
             <div class="kanban-card ${atrasada ? 'kanban-card-atrasada' : ''}"
                  draggable="true"
@@ -37,9 +42,9 @@ function renderizarKanban() {
                     </div>
                 </div>
                 <div class="kanban-card-title">${t.titulo}</div>
-                ${t.desc ? `<div class="kanban-card-meta">${t.desc}</div>` : ''}
+                ${t.descricao ? `<div class="kanban-card-meta">${t.descricao}</div>` : ''}
                 <div class="kanban-card-footer">
-                    ${t.dataLimite ? `<span style="font-size:10px;color:${atrasada ? 'var(--danger)' : 'var(--text-muted)'}"><i class="fa-solid fa-calendar-day"></i> ${new Date(t.dataLimite+'T12:00:00').toLocaleDateString('pt-BR')}</span>` : '<span></span>'}
+                    ${dataLimiteISO ? `<span style="font-size:10px;color:${atrasada ? 'var(--danger)' : 'var(--text-muted)'}"><i class="fa-solid fa-calendar-day"></i> ${new Date(dataLimiteISO+'T12:00:00').toLocaleDateString('pt-BR')}</span>` : '<span></span>'}
                     ${resp ? `<span style="font-size:10px;color:var(--text-muted)"><i class="fa-solid fa-user"></i> ${resp.split(' ')[0]}</span>` : ''}
                 </div>
             </div>`;
@@ -68,57 +73,59 @@ function dragEndTarefa() {
     dragTarefaId = null;
 }
 
-function dropTarefa(novoStatus) {
+async function dropTarefa(novoStatus) {
     if (dragTarefaId === null) return;
-    tarefas = carregarTarefas();
-    const t = tarefas.find(x => x.id === dragTarefaId);
-    if (t) {
-        t.status = novoStatus;
-        salvarTarefasList();
-        renderizarKanban();
-        mostrarNotificacao(`Tarefa movida para "${COLUNAS_KANBAN.find(c=>c.id===novoStatus)?.label}".`);
-    }
+    const id = dragTarefaId;
     dragTarefaId = null;
+    try {
+        await alterarStatusTarefaNoBanco(id, novoStatus);
+        await renderizarKanban();
+        mostrarNotificacao(`Tarefa movida para "${COLUNAS_KANBAN.find(c=>c.id===novoStatus)?.label}".`);
+    } catch (erro) {
+        mostrarNotificacao(erro.message || 'Não foi possível mover a tarefa.', 'erro');
+        await renderizarKanban();
+    }
 }
 
 // ─── SALVAR ────────────────────────────
 
-function salvarTarefa() {
+async function salvarTarefa() {
     if (!validarCampos([{ id: 'tarefaTitulo' }])) return;
 
     const modal = document.getElementById('modalTarefa');
     const editId = modal._editId;
 
+    const dataLimite = document.getElementById('tarefaDataLimite')?.value || '';
+    const responsavelId = document.getElementById('tarefaResponsavel')?.value || '';
+
     const dados = {
         titulo:        document.getElementById('tarefaTitulo').value.trim(),
-        desc:          document.getElementById('tarefaDesc').value.trim(),
+        descricao:     document.getElementById('tarefaDesc').value.trim(),
         prioridade:    document.getElementById('tarefaPrioridade').value,
         status:        document.getElementById('tarefaStatus').value,
-        dataLimite:    document.getElementById('tarefaDataLimite')?.value || '',
-        responsavelId: document.getElementById('tarefaResponsavel')?.value || ''
+        dataLimite:    dataLimite ? new Date(dataLimite + 'T12:00:00').toISOString() : null,
+        responsavelId: responsavelId ? Number(responsavelId) : null
     };
 
-    tarefas = carregarTarefas();
-
-    if (editId !== null && editId !== undefined) {
-        const t = tarefas.find(x => x.id === editId);
-        if (t) Object.assign(t, dados);
-    } else {
-        tarefas.push({ id: Date.now(), ...dados });
+    try {
+        await salvarTarefaNoBanco(dados, editId);
+        fecharModalTarefa();
+        await renderizarKanban();
+        mostrarNotificacao(editId ? 'Tarefa atualizada!' : 'Tarefa criada!');
+    } catch (erro) {
+        mostrarNotificacao(erro.message || 'Não foi possível salvar a tarefa.', 'erro');
     }
-
-    salvarTarefasList();
-    fecharModalTarefa();
-    renderizarKanban();
-    mostrarNotificacao(editId ? 'Tarefa atualizada!' : 'Tarefa criada!');
 }
 
 function excluirTarefa(id) {
-    abrirConfirmacao('Excluir esta tarefa?', () => {
-        tarefas = tarefas.filter(t => t.id !== id);
-        salvarTarefasList();
-        renderizarKanban();
-        mostrarNotificacao('Tarefa excluída.');
+    abrirConfirmacao('Excluir esta tarefa?', async () => {
+        try {
+            await excluirTarefaNoBanco(id);
+            await renderizarKanban();
+            mostrarNotificacao('Tarefa excluída.');
+        } catch (erro) {
+            mostrarNotificacao(erro.message || 'Não foi possível excluir a tarefa.', 'erro');
+        }
     });
 }
 

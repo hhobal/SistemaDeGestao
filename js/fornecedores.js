@@ -5,7 +5,6 @@
 let fornecedores = [];
 const FORN_POR_PAGINA = 10;
 let paginaFornecedores = 1;
-let fornecedorEditando = null;
 
 function mudarPaginaFornecedores(p) {
     const total = Math.ceil(_filtrarFornecedores().length / FORN_POR_PAGINA);
@@ -23,8 +22,12 @@ function _filtrarFornecedores() {
     );
 }
 
-function renderizarFornecedores() {
-    fornecedores = carregarFornecedores();
+async function renderizarFornecedores() {
+    fornecedores = await carregarFornecedoresDoBanco();
+    _desenharTabelaFornecedores();
+}
+
+function _desenharTabelaFornecedores() {
     const tabela = document.getElementById('tabelaFornecedores');
     if (!tabela) return;
 
@@ -53,7 +56,7 @@ function renderizarFornecedores() {
     renderizarPaginacao('paginacaoFornecedores', filtrados.length, FORN_POR_PAGINA, paginaFornecedores, 'mudarPaginaFornecedores');
 }
 
-function salvarFornecedor() {
+async function salvarFornecedor() {
     if (!validarCampos([{ id: 'fornecedorEmpresa' }])) return;
 
     const modal = document.getElementById('modalFornecedor');
@@ -68,31 +71,26 @@ function salvarFornecedor() {
         categoria: document.getElementById('fornecedorCategoria').value
     };
 
-    fornecedores = carregarFornecedores();
-
-    if (editId !== null && editId !== undefined) {
-        const f = fornecedores.find(x => x.id === editId);
-        if (f) Object.assign(f, dados);
-        registrarLog('Editar', 'Fornecedores', dados.empresa);
-    } else {
-        fornecedores.push({ id: _nextId(fornecedores), ...dados });
-        registrarLog('Criar', 'Fornecedores', dados.empresa);
+    try {
+        await salvarFornecedorNoBanco(dados, editId);
+        fecharModalFornecedor();
+        await renderizarFornecedores();
+        mostrarNotificacao(editId ? 'Fornecedor atualizado!' : 'Fornecedor cadastrado!');
+    } catch (erro) {
+        mostrarNotificacao(erro.message || 'Não foi possível salvar o fornecedor.', 'erro');
     }
-
-    salvarFornecedoresList();
-    fecharModalFornecedor();
-    renderizarFornecedores();
-    mostrarNotificacao(editId ? 'Fornecedor atualizado!' : 'Fornecedor cadastrado!');
 }
 
 function excluirFornecedor(id) {
-    const f = fornecedores.find(x => x.id === id);
-    abrirConfirmacao(`Excluir o fornecedor "${f?.empresa}"?`, () => {
-        fornecedores = fornecedores.filter(x => x.id !== id);
-        salvarFornecedoresList();
-        renderizarFornecedores();
-        registrarLog('Excluir', 'Fornecedores', f?.empresa);
-        mostrarNotificacao('Fornecedor excluído.');
+    const f = fornecedores.find(x => String(x.id) === String(id));
+    abrirConfirmacao(`Excluir o fornecedor "${f?.empresa}"?`, async () => {
+        try {
+            await excluirFornecedorNoBanco(id);
+            await renderizarFornecedores();
+            mostrarNotificacao('Fornecedor excluído.');
+        } catch (erro) {
+            mostrarNotificacao(erro.message || 'Não foi possível excluir o fornecedor.', 'erro');
+        }
     }, 'Excluir fornecedor');
 }
 

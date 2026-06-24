@@ -4,8 +4,12 @@
 
 let notas = [];
 
-function renderizarNotas() {
-    notas = carregarNotas();
+async function renderizarNotas() {
+    notas = await carregarNotasDoBanco();
+    _desenharGridNotas();
+}
+
+function _desenharGridNotas() {
     const grid = document.getElementById('notasGrid');
     if (!grid) return;
 
@@ -24,11 +28,11 @@ function renderizarNotas() {
                 </div>
             </div>
             <p>${n.conteudo || '<em style="opacity:.5">Sem conteúdo</em>'}</p>
-            <div class="nota-date">${n.data}</div>
+            <div class="nota-date">${n.criadoEm ? new Date(n.criadoEm).toLocaleDateString('pt-BR') : ''}</div>
         </div>`).join('');
 }
 
-function salvarNota() {
+async function salvarNota() {
     if (!validarCampos([{ id: 'notaTitulo' }])) return;
 
     const modal = document.getElementById('modalNota');
@@ -37,31 +41,28 @@ function salvarNota() {
     const dados = {
         titulo:   document.getElementById('notaTitulo').value.trim(),
         conteudo: document.getElementById('notaConteudo').value.trim(),
-        cor:      document.getElementById('notaCor').value,
-        data:     new Date().toLocaleDateString('pt-BR')
+        cor:      document.getElementById('notaCor').value
     };
 
-    notas = carregarNotas();
-
-    if (editId !== null && editId !== undefined) {
-        const n = notas.find(x => x.id === editId);
-        if (n) Object.assign(n, dados);
-    } else {
-        notas.push({ id: Date.now(), ...dados });
+    try {
+        await salvarNotaNoBanco(dados, editId);
+        fecharModalNota();
+        await renderizarNotas();
+        mostrarNotificacao(editId ? 'Nota atualizada!' : 'Nota salva!');
+    } catch (erro) {
+        mostrarNotificacao(erro.message || 'Não foi possível salvar a nota.', 'erro');
     }
-
-    salvarNotasList();
-    fecharModalNota();
-    renderizarNotas();
-    mostrarNotificacao(editId ? 'Nota atualizada!' : 'Nota salva!');
 }
 
 function excluirNota(id) {
-    abrirConfirmacao('Excluir esta nota?', () => {
-        notas = notas.filter(n => n.id !== id);
-        salvarNotasList();
-        renderizarNotas();
-        mostrarNotificacao('Nota excluída.');
+    abrirConfirmacao('Excluir esta nota?', async () => {
+        try {
+            await excluirNotaNoBanco(id);
+            await renderizarNotas();
+            mostrarNotificacao('Nota excluída.');
+        } catch (erro) {
+            mostrarNotificacao(erro.message || 'Não foi possível excluir a nota.', 'erro');
+        }
     });
 }
 

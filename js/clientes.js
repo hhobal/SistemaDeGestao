@@ -5,7 +5,6 @@
 let clientes = [];
 const CLIENTES_POR_PAGINA = 10;
 let paginaAtualClientes = 1;
-let ordenacaoClientes = { campo: 'nome', asc: true };
 
 function mudarPaginaClientes(p) {
     const total = Math.ceil(_filtrarClientes().length / CLIENTES_POR_PAGINA);
@@ -56,10 +55,17 @@ function renderizarClientes() {
     }
 
     renderizarPaginacao('paginacaoClientes', filtrados.length, CLIENTES_POR_PAGINA, paginaAtualClientes, 'mudarPaginaClientes');
-    document.getElementById('totalClientes').textContent = clientes.length;
+    const totalClientesEl = document.getElementById('totalClientesLista');
+    if (totalClientesEl) totalClientesEl.textContent = clientes.length;
 }
 
-function salvarCliente() {
+async function carregarClientesNaTela() {
+    clientes = await carregarClientesDoBanco();
+    renderizarClientes();
+    if (typeof atualizarTudo === 'function') atualizarTudo();
+}
+
+async function salvarCliente() {
     const campos = [{ id: 'clienteNome', nome: 'Nome' }];
     if (!validarCampos(campos)) return;
 
@@ -76,36 +82,34 @@ function salvarCliente() {
         status:     document.getElementById('clienteStatus').value
     };
 
-    clientes = carregarClientes();
-
-    if (editId !== null && editId !== undefined) {
-        const c = clientes.find(x => x.id === editId);
-        if (c) Object.assign(c, dados);
-        registrarLog('Editar', 'Clientes', dados.nome);
-    } else {
-        clientes.push({ id: _nextId(clientes), ...dados });
-        registrarLog('Criar', 'Clientes', dados.nome);
+    try {
+        await salvarClienteNoBanco(dados, editId);
+        fecharModalCliente();
+        renderizarClientes();
+        if (typeof atualizarTudo === 'function') atualizarTudo();
+        mostrarNotificacao(editId ? 'Cliente atualizado!' : 'Cliente cadastrado!');
+    } catch (erro) {
+        mostrarNotificacao(erro.message || 'Não foi possível salvar o cliente.', 'erro');
     }
-
-    salvarClientes();
-    fecharModalCliente();
-    renderizarClientes();
-    atualizarTudo();
-    mostrarNotificacao(editId ? 'Cliente atualizado!' : 'Cliente cadastrado!');
 }
 
 function excluirCliente(id) {
-    const c = clientes.find(x => x.id === id);
-    abrirConfirmacao(`Excluir o cliente "${c?.nome}"? Esta ação não pode ser desfeita.`, () => {
-        clientes = clientes.filter(x => x.id !== id);
-        salvarClientes();
-        renderizarClientes();
-        atualizarTudo();
-        registrarLog('Excluir', 'Clientes', c?.nome);
-        mostrarNotificacao('Cliente excluído.');
+    const c = clientes.find(x => String(x.id) === String(id));
+    abrirConfirmacao(`Excluir o cliente "${c?.nome}"? Esta ação não pode ser desfeita.`, async () => {
+        try {
+            await excluirClienteNoBanco(id);
+            clientes = carregarClientes();
+            renderizarClientes();
+            if (typeof atualizarTudo === 'function') atualizarTudo();
+            mostrarNotificacao('Cliente excluído.');
+        } catch (erro) {
+            mostrarNotificacao(erro.message || 'Não foi possível excluir o cliente.', 'erro');
+        }
     }, 'Excluir cliente');
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    clientes = carregarClientes();
-});
+// Observação: o carregamento inicial de clientes acontece em dois lugares
+// por design — app.js pré-carrega o cache (usado nos selects de O.S.) e
+// mostrarSecao('clientes') busca a lista fresca quando a aba é aberta.
+// Não há um terceiro carregamento automático aqui para evitar uma
+// requisição duplicada e desnecessária logo no início da sessão.

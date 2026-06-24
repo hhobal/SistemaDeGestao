@@ -1,0 +1,19 @@
+node_modules/
+.env
+*.log
+npm-debug.log*
+
+# Banco SQLite local
+prisma/dev.db
+prisma/dev.db-journal
+*.db
+*.db-journal
+
+# Migrations geradas automaticamente continuam versionadas,
+# mas o banco em si (arquivo .db) nunca deve ir para o git.
+
+.DS_Store
+Thumbs.db
+
+# Backups exportados
+/backups/

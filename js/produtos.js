@@ -24,8 +24,12 @@ function _filtrarProdutos() {
     );
 }
 
-function renderizarProdutos() {
-    produtos = carregarProdutos();
+async function renderizarProdutos() {
+    produtos = await carregarProdutosDoBanco();
+    _desenharTabelaProdutos();
+}
+
+function _desenharTabelaProdutos() {
     const tabela = document.getElementById('tabelaProdutos');
     if (!tabela) return;
 
@@ -67,7 +71,7 @@ function renderizarProdutos() {
     }
 }
 
-function salvarProduto() {
+async function salvarProduto() {
     if (!validarCampos([{ id: 'produtoNome' }, { id: 'produtoPreco' }])) return;
 
     const modal = document.getElementById('modalProduto');
@@ -84,33 +88,28 @@ function salvarProduto() {
         descricao:   document.getElementById('produtoDescricao').value.trim()
     };
 
-    produtos = carregarProdutos();
-
-    if (editId !== null && editId !== undefined) {
-        const p = produtos.find(x => x.id === editId);
-        if (p) Object.assign(p, dados);
-        registrarLog('Editar', 'Produtos', dados.nome);
-    } else {
-        produtos.push({ id: _nextId(produtos), ...dados });
-        registrarLog('Criar', 'Produtos', dados.nome);
+    try {
+        await salvarProdutoNoBanco(dados, editId);
+        fecharModalProduto();
+        await renderizarProdutos();
+        if (typeof atualizarTudo === 'function') atualizarTudo();
+        mostrarNotificacao(editId ? 'Produto atualizado!' : 'Produto cadastrado!');
+    } catch (erro) {
+        mostrarNotificacao(erro.message || 'Não foi possível salvar o produto.', 'erro');
     }
-
-    salvarProdutos();
-    fecharModalProduto();
-    renderizarProdutos();
-    atualizarTudo();
-    mostrarNotificacao(editId ? 'Produto atualizado!' : 'Produto cadastrado!');
 }
 
 function excluirProduto(id) {
-    const p = produtos.find(x => x.id === id);
-    abrirConfirmacao(`Excluir o produto "${p?.nome}"?`, () => {
-        produtos = produtos.filter(x => x.id !== id);
-        salvarProdutos();
-        renderizarProdutos();
-        atualizarTudo();
-        registrarLog('Excluir', 'Produtos', p?.nome);
-        mostrarNotificacao('Produto excluído.');
+    const p = produtos.find(x => String(x.id) === String(id));
+    abrirConfirmacao(`Excluir o produto "${p?.nome}"?`, async () => {
+        try {
+            await excluirProdutoNoBanco(id);
+            await renderizarProdutos();
+            if (typeof atualizarTudo === 'function') atualizarTudo();
+            mostrarNotificacao('Produto excluído.');
+        } catch (erro) {
+            mostrarNotificacao(erro.message || 'Não foi possível excluir o produto.', 'erro');
+        }
     }, 'Excluir produto');
 }
 

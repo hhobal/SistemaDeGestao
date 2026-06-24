@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../Sistema de Gestão"
+		},
+		{
+			"path": "../backend"
+		}
+	],
+	"settings": {
+		"liveServer.settings.port": 5501,
+		"liveServer.settings.multiRootWorkspaceName": "Sistema de Gestão"
+	}
+}

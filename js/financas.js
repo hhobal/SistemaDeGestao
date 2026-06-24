@@ -3,58 +3,61 @@
 // ======================================
 
 let lancamentos = [];
-
-function atualizarFinancas() {
-    lancamentos = carregarLancamentos();
-    _atualizarCardsFinancas();
-    renderizarLancamentos();
-}
-
-function _atualizarCardsFinancas() {
-    const lancsFiltrados = _filtrarLancamentos();
-    const receitas  = lancamentos.filter(l => l.tipo === 'receita').reduce((s, l) => s + Number(l.valor||0), 0);
-    const despesas  = lancamentos.filter(l => l.tipo === 'despesa').reduce((s, l) => s + Number(l.valor||0), 0);
-    const pendentes = lancamentos.filter(l => l.status === 'pendente').length;
-    const fmt = v => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
-    const el = id => document.getElementById(id);
-    if (el('finReceitas')) el('finReceitas').textContent = fmt(receitas);
-    if (el('finDespesas')) el('finDespesas').textContent = fmt(despesas);
-    if (el('finSaldo')) {
-        el('finSaldo').textContent = fmt(receitas - despesas);
-        el('finSaldo').style.color = receitas - despesas >= 0 ? 'var(--success)' : 'var(--danger)';
-    }
-    if (el('finPendentes')) el('finPendentes').textContent = pendentes;
-}
-
 const LANC_POR_PAGINA = 15;
 let paginaAtualLanc = 1;
 
+function _filtrosAtuais() {
+    return {
+        tipo:   document.getElementById('filtroTipoLanc')?.value || '',
+        status: document.getElementById('filtroStatusLanc')?.value || '',
+        busca:  document.getElementById('pesquisaLancamentos')?.value || ''
+    };
+}
+
+async function atualizarFinancas() {
+    const filtros = _filtrosAtuais();
+    const [resumo, listaLancamentos] = await Promise.all([
+        carregarResumoFinancasDoBanco(filtros),
+        carregarLancamentosDoBanco(filtros)
+    ]);
+    lancamentos = listaLancamentos;
+    _atualizarCardsFinancas(resumo);
+    _desenharTabelaLancamentos();
+}
+
+function _atualizarCardsFinancas(resumo) {
+    const fmt = v => Number(v||0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const el = id => document.getElementById(id);
+    if (el('finReceitas')) el('finReceitas').textContent = fmt(resumo.receita);
+    if (el('finDespesas')) el('finDespesas').textContent = fmt(resumo.despesa);
+    if (el('finSaldo')) {
+        el('finSaldo').textContent = fmt(resumo.saldo);
+        el('finSaldo').style.color = resumo.saldo >= 0 ? 'var(--success)' : 'var(--danger)';
+    }
+    if (el('finPendentes')) el('finPendentes').textContent = resumo.pendentes;
+}
+
 function mudarPaginaLanc(p) {
-    const total = Math.ceil(_filtrarLancamentos().length / LANC_POR_PAGINA);
+    const total = Math.ceil(lancamentos.length / LANC_POR_PAGINA);
     if (p < 1 || p > total) return;
     paginaAtualLanc = p;
-    renderizarLancamentos();
+    _desenharTabelaLancamentos();
 }
 
-function _filtrarLancamentos() {
-    const tipo    = document.getElementById('filtroTipoLanc')?.value || '';
-    const status  = document.getElementById('filtroStatusLanc')?.value || '';
-    const termoBusca = (document.getElementById('pesquisaLancamentos')?.value || '').toLowerCase();
-    return lancamentos.filter(l =>
-        (tipo   ? l.tipo   === tipo   : true) &&
-        (status ? l.status === status : true) &&
-        (termoBusca ? (l.descricao||'').toLowerCase().includes(termoBusca) || (l.categoria||'').toLowerCase().includes(termoBusca) : true)
-    );
-}
-
+// A busca/filtro de tipo/status já é feita no backend (atualizarFinancas
+// reenvia os filtros atuais a cada chamada). Aqui só paginamos o que
+// já veio filtrado.
 function renderizarLancamentos() {
+    paginaAtualLanc = 1;
+    atualizarFinancas();
+}
+
+function _desenharTabelaLancamentos() {
     const tabela = document.getElementById('tabelaLancamentos');
     if (!tabela) return;
 
-    const filtrados = _filtrarLancamentos();
     const inicio = (paginaAtualLanc - 1) * LANC_POR_PAGINA;
-    const pagina = filtrados.slice(inicio, inicio + LANC_POR_PAGINA);
+    const pagina = lancamentos.slice(inicio, inicio + LANC_POR_PAGINA);
     const fmt = v => Number(v||0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
     if (pagina.length === 0) {
@@ -63,75 +66,74 @@ function renderizarLancamentos() {
         tabela.innerHTML = pagina.map(l => {
             const cor = l.tipo === 'receita' ? 'var(--success)' : 'var(--danger)';
             const statusCls = l.status === 'pago' ? 'status-entregue' : 'status-pendente';
+            const dataISO = l.data ? String(l.data).split('T')[0] : '';
+            const dataFmt = l.data ? new Date(l.data).toLocaleDateString('pt-BR') : '—';
 
-            // Alerta de vencido
             const hoje = new Date().toISOString().split('T')[0];
-            const vencido = l.status === 'pendente' && l.dataISO && l.dataISO < hoje;
+            const vencido = l.status === 'pendente' && dataISO && dataISO < hoje;
+            const gerencialAutomatico = !!(l.pedidoId || l.osId);
 
             return `
             <tr${vencido ? ' style="background:rgba(248,113,113,0.06)"' : ''}>
-                <td>${l.data}${vencido ? ' <span style="color:var(--danger);font-size:10px;font-weight:700">VENCIDO</span>' : ''}</td>
-                <td>${l.descricao}</td>
+                <td>${dataFmt}${vencido ? ' <span style="color:var(--danger);font-size:10px;font-weight:700">VENCIDO</span>' : ''}</td>
+                <td>${l.descricao}${gerencialAutomatico ? ' <span title="Gerado automaticamente por Pedido/O.S." style="font-size:10px;color:var(--text-muted)"><i class="fa-solid fa-link"></i></span>' : ''}</td>
                 <td><span class="tag">${l.categoria||'—'}</span></td>
                 <td style="color:${cor};font-weight:600">${l.tipo}</td>
                 <td style="color:${cor};font-weight:700">${l.tipo === 'receita' ? '+' : '-'}${fmt(l.valor)}</td>
                 <td><span class="status-badge ${statusCls}">${l.status === 'pago' ? 'Pago/Recebido' : 'Pendente'}</span></td>
                 <td>
-                    <button class="btn-icon" title="Editar" onclick="abrirModalLancamento(${l.id})"><i class="fa-solid fa-pen"></i></button>
-                    <button class="btn-icon btn-icon-danger" title="Excluir" onclick="excluirLancamento(${l.id})"><i class="fa-solid fa-trash"></i></button>
+                    <button class="btn-icon" title="Editar" onclick="abrirModalLancamento(${l.id})" ${gerencialAutomatico ? 'disabled style="opacity:.35;cursor:not-allowed"' : ''}><i class="fa-solid fa-pen"></i></button>
+                    <button class="btn-icon btn-icon-danger" title="Excluir" onclick="excluirLancamento(${l.id})" ${gerencialAutomatico ? 'disabled style="opacity:.35;cursor:not-allowed"' : ''}><i class="fa-solid fa-trash"></i></button>
                 </td>
             </tr>`;
         }).join('');
     }
 
-    renderizarPaginacao('paginacaoLanc', filtrados.length, LANC_POR_PAGINA, paginaAtualLanc, 'mudarPaginaLanc');
+    renderizarPaginacao('paginacaoLanc', lancamentos.length, LANC_POR_PAGINA, paginaAtualLanc, 'mudarPaginaLanc');
 }
 
-function salvarLancamento() {
+async function salvarLancamento() {
     if (!validarCampos([{ id: 'lancDescricao' }, { id: 'lancValor' }, { id: 'lancData' }])) return;
 
     const modal = document.getElementById('modalLancamento');
     const editId = modal._editId;
 
     const dataISO = document.getElementById('lancData').value;
-    const dataObj = new Date(dataISO + 'T12:00:00');
     const dados = {
         descricao: document.getElementById('lancDescricao').value.trim(),
         categoria: document.getElementById('lancCategoria').value,
         tipo:      document.getElementById('lancTipo').value,
         valor:     parseFloat(document.getElementById('lancValor').value),
         status:    document.getElementById('lancStatus').value,
-        dataISO:   dataISO,
-        data:      dataObj.toLocaleDateString('pt-BR')
+        data:      dataISO ? new Date(dataISO + 'T12:00:00').toISOString() : undefined
     };
 
-    lancamentos = carregarLancamentos();
-
-    if (editId !== null && editId !== undefined) {
-        const l = lancamentos.find(x => x.id === editId);
-        if (l) Object.assign(l, dados);
-        registrarLog('Editar', 'Finanças', `${dados.tipo} ${dados.descricao}`);
-    } else {
-        lancamentos.push({ id: Date.now(), ...dados });
-        registrarLog('Criar', 'Finanças', `${dados.tipo} ${dados.descricao}`);
+    try {
+        await salvarLancamentoNoBanco(dados, editId);
+        fecharModalLancamento();
+        await atualizarFinancas();
+        if (typeof atualizarTudo === 'function') atualizarTudo();
+        mostrarNotificacao(editId ? 'Lançamento atualizado!' : 'Lançamento registrado!');
+    } catch (erro) {
+        mostrarNotificacao(erro.message || 'Não foi possível salvar o lançamento.', 'erro');
     }
-
-    salvarLancamentosList();
-    fecharModalLancamento();
-    atualizarFinancas();
-    atualizarTudo();
-    mostrarNotificacao(editId ? 'Lançamento atualizado!' : 'Lançamento registrado!');
 }
 
 function excluirLancamento(id) {
-    const l = lancamentos.find(x => x.id === id);
-    abrirConfirmacao(`Excluir o lançamento "${l?.descricao}"?`, () => {
-        lancamentos = lancamentos.filter(x => x.id !== id);
-        salvarLancamentosList();
-        atualizarFinancas();
-        atualizarTudo();
-        registrarLog('Excluir', 'Finanças', l?.descricao);
-        mostrarNotificacao('Lançamento excluído.');
+    const l = lancamentos.find(x => String(x.id) === String(id));
+    if (l && (l.pedidoId || l.osId)) {
+        mostrarNotificacao('Este lançamento foi gerado automaticamente por um Pedido ou O.S. Cancele a origem em vez de excluir aqui.', 'erro');
+        return;
+    }
+    abrirConfirmacao(`Excluir o lançamento "${l?.descricao}"?`, async () => {
+        try {
+            await excluirLancamentoNoBanco(id);
+            await atualizarFinancas();
+            if (typeof atualizarTudo === 'function') atualizarTudo();
+            mostrarNotificacao('Lançamento excluído.');
+        } catch (erro) {
+            mostrarNotificacao(erro.message || 'Não foi possível excluir o lançamento.', 'erro');
+        }
     }, 'Excluir lançamento');
 }
 
