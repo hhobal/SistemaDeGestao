@@ -29,11 +29,11 @@ gera o lançamento financeiro correspondente — em uma única transação.
 |--------------|----------------------------------------------------------|
 | Front-end    | HTML5, CSS3, JavaScript (ES6+) — sem framework, sem build |
 | Back-end     | Node.js, Express 4                                        |
-| Banco        | PostgreSQL (produção) · SQLite (desenvolvimento)          |
+| Banco        | PostgreSQL em todos os ambientes (Supabase em produção)   |
 | ORM          | Prisma 5                                                  |
 | Autenticação | JWT (`jsonwebtoken`) + bcrypt                             |
 | Validação    | Zod                                                       |
-| Segurança    | Helmet, CORS configurável                                 |
+| Segurança    | Helmet, CORS configurável, rate limiting, escape de HTML  |
 | Testes       | Vitest, Supertest                                         |
 | CI           | GitHub Actions                                            |
 | Deploy       | Vercel (front-end) · Render (API) · Supabase (PostgreSQL) |
@@ -97,7 +97,7 @@ lib/prisma.js    acesso ao banco
 │   │   ├── schema.prisma    16 models
 │   │   ├── migrations/
 │   │   └── seed.js
-│   └── tests/               35 testes (Vitest + Supertest)
+│   └── tests/               48 testes (Vitest + Supertest)
 │       ├── helpers/           fábricas e limpeza de banco
 │       ├── setup.js           ambiente isolado de teste
 │       └── global-setup.js    cria o banco da suíte
@@ -129,10 +129,30 @@ duplicatas.
 distintos (`JWT_SECRET` e `JWT_LOJA_SECRET`). Um token de cliente nunca
 é aceito em rota administrativa, mesmo que o algoritmo seja o mesmo.
 
-**Portabilidade entre SQLite e PostgreSQL.** Campos de status usam `String`
-em vez de `enum` do Prisma, já que SQLite não tem enum nativo. A validação
-dos valores permitidos fica na camada da API, com Zod. O mesmo schema roda
-nos dois bancos sem alteração.
+**Dinheiro em `Decimal`, nunca em `Float`.** Ponto flutuante não
+representa decimais exatamente: somar mil vendas de R$ 12,10 dá
+`12100.000000000218`. Os sete campos monetários usam `Decimal(12,2)` e as
+contas usam `.mul()`/`.add()` em vez de `*` e `+`, que voltariam a
+converter para float. Há testes cobrindo exatamente esses casos.
+
+**Escape de HTML por padrão no front-end.** Qualquer visitante cria conta
+na loja escolhendo o próprio nome, e esse nome é exibido no painel
+administrativo. Interpolar direto em `innerHTML` executaria o que o
+visitante escrevesse — com a sessão do administrador. O
+`html` de `js/seguranca.js` é um *tagged template* que escapa toda
+interpolação; inserir HTML exige marcação explícita. Se alguém esquecer,
+o texto aparece escapado na tela em vez de abrir um buraco silencioso.
+
+**Identificação do cliente atrás de proxy.** A requisição atravessa
+Cloudflare e o balanceador do Render, deixando três endereços em
+`X-Forwarded-For`. O `req.ip` do Express resolve para o último — um IP
+interno que muda a cada chamada, o que zerava o contador do limite de
+tentativas. O limitador usa `CF-Connecting-IP`, que o Cloudflare
+sobrescreve e o visitante não consegue forjar.
+
+**Status como `String`, não `enum`.** A validação dos valores permitidos
+fica na camada da API, com Zod — assim adicionar um status novo não exige
+migration nem downtime.
 
 ## Rodando localmente
 
@@ -168,7 +188,7 @@ Para inspecionar o banco visualmente: `npm run db:studio`.
 
 ## Testes
 
-35 testes cobrindo a regra de negócio crítica, executados com Vitest e
+48 testes cobrindo a regra de negócio crítica, executados com Vitest e
 Supertest sobre um PostgreSQL descartável — o mesmo banco da produção,
 recriado do zero a cada execução.
 
@@ -183,6 +203,7 @@ npm run test:coverage # com relatório de cobertura
 | `pedidos.service.test.js`  | checkout transacional, estoque, snapshot de preço, rollback |
 | `auth.test.js`             | login, proteção de rotas, perfis, isolamento de tokens  |
 | `numeracao.test.js`        | numeração sequencial sob concorrência                   |
+| `rateLimit.test.js`        | força bruta no login e identificação do cliente         |
 
 Cobertura de `pedidos.service.js` — o módulo mais crítico — em 100%.
 
