@@ -59,13 +59,30 @@ app.get('/api/saude', async (req, res) => {
     console.error('[SAUDE] Banco inacessível:', erro.message);
   }
 
-  res.json({
+  const corpo = {
     ok: banco === 'ok',
     ambiente: env.ambiente,
     banco,
     latenciaBanco,
     horario: new Date().toISOString()
-  });
+  };
+
+  // TEMPORÁRIO: diagnóstico da cadeia de proxy, para descobrir de qual
+  // cabeçalho extrair o IP real do cliente no limitador de tentativas.
+  // Mostra apenas o endereço de quem fez a chamada — nada de terceiros.
+  if (req.query.debug === 'rede') {
+    corpo.rede = {
+      ip: req.ip,
+      ips: req.ips,
+      xForwardedFor: req.headers['x-forwarded-for'] || null,
+      cfConnectingIp: req.headers['cf-connecting-ip'] || null,
+      trueClientIp: req.headers['true-client-ip'] || null,
+      xRealIp: req.headers['x-real-ip'] || null,
+      trustProxy: req.app.get('trust proxy')
+    };
+  }
+
+  res.json(corpo);
 });
 
 // ─── ROTAS — PAINEL ADMINISTRATIVO (EQUIPE INTERNA) ─────
