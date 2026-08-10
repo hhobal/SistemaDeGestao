@@ -29,7 +29,7 @@ function _desenharCalendario() {
     const dias  = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
     label.textContent = `${meses[calMes]} ${calAno}`;
 
-    grid.innerHTML = dias.map(d => `<div class="cal-day-header">${d}</div>`).join('');
+    grid.innerHTML = dias.map(d => html`<div class="cal-day-header">${d}</div>`).join('');
 
     const primeiroDia = new Date(calAno, calMes, 1).getDay();
     const totalDias   = new Date(calAno, calMes + 1, 0).getDate();
@@ -37,16 +37,20 @@ function _desenharCalendario() {
 
     for (let i = 0; i < primeiroDia; i++) {
         const prev = new Date(calAno, calMes, 0).getDate();
-        grid.innerHTML += `<div class="cal-day other-month"><div class="cal-date">${prev - primeiroDia + i + 1}</div></div>`;
+        grid.innerHTML += html`<div class="cal-day other-month"><div class="cal-date">${prev - primeiroDia + i + 1}</div></div>`;
     }
 
     for (let d = 1; d <= totalDias; d++) {
         const isHoje  = hoje.getDate() === d && hoje.getMonth() === calMes && hoje.getFullYear() === calAno;
         const dataStr = `${calAno}-${String(calMes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
         const evsDia  = eventos.filter(e => _dataLocalISO(e.data) === dataStr);
-        const dotHtml = evsDia.length > 0 ? `<div class="cal-dots">${evsDia.slice(0,3).map(() => '<span class="cal-dot"></span>').join('')}</div>` : '';
-        const evHtml  = evsDia.slice(0,2).map(e => `<div class="cal-event" title="${e.titulo}">${e.titulo}</div>`).join('');
-        grid.innerHTML += `<div class="cal-day${isHoje ? ' today' : ''}" onclick="abrirModalEvento('${dataStr}')" title="Adicionar evento">${dotHtml}<div class="cal-date">${d}</div>${evHtml}</div>`;
+        // Sem .join(''): o array de trechos `html` é concatenado pela própria
+        // função de escape, preservando o HTML. Um .join('') aqui devolveria
+        // uma string comum, que seria escapada ao ser interpolada abaixo e
+        // apareceria como texto literal na tela.
+        const dotHtml = evsDia.length > 0 ? html`<div class="cal-dots">${evsDia.slice(0,3).map(() => html`<span class="cal-dot"></span>`)}</div>` : '';
+        const evHtml  = evsDia.slice(0,2).map(e => html`<div class="cal-event" title="${e.titulo}">${e.titulo}</div>`);
+        grid.innerHTML += html`<div class="cal-day${isHoje ? ' today' : ''}" onclick="abrirModalEvento('${dataStr}')" title="Adicionar evento">${dotHtml}<div class="cal-date">${d}</div>${evHtml}</div>`;
     }
 
     renderizarTabelaEventos();
@@ -68,11 +72,11 @@ function renderizarTabelaEventos() {
     const cores = { reuniao: 'var(--accent)', tarefa: 'var(--warning)', compromisso: 'var(--success)', outro: 'var(--text-muted)' };
     tabela.innerHTML = proximos.map(e => {
         const d = new Date(_dataLocalISO(e.data) + 'T12:00:00').toLocaleDateString('pt-BR');
-        return `
+        return html`
         <tr>
             <td>${d}</td>
             <td>${e.hora || '—'}</td>
-            <td><strong>${e.titulo}</strong>${e.descricao ? `<br><span style="font-size:11px;color:var(--text-muted)">${e.descricao}</span>` : ''}</td>
+            <td><strong>${e.titulo}</strong>${e.descricao ? html`<br><span style="font-size:11px;color:var(--text-muted)">${e.descricao}</span>` : ''}</td>
             <td><span style="color:${cores[e.tipo]||'var(--accent)'}"><i class="fa-solid fa-circle" style="font-size:8px;margin-right:4px"></i>${e.tipo}</span></td>
             <td><button class="btn-icon btn-icon-danger" onclick="excluirEvento(${e.id})"><i class="fa-solid fa-trash"></i></button></td>
         </tr>`;

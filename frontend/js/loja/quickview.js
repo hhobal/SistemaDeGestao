@@ -15,9 +15,9 @@ function abrirQuickView(id) {
   const novo = ehProdutoNovo(p);
   const ehFav = lojaCarregarFavoritos().includes(id);
 
-  document.getElementById('qvConteudo').innerHTML = `
+  document.getElementById('qvConteudo').innerHTML = html`
     <div class="qv-img ${gradClasseDoProduto(p)}">
-      ${novo ? `<span class="produto-badge novo">Novo</span>` : (sem ? `<span class="produto-badge baixo">Últimas unid.</span>` : '')}
+      ${novo ? html`<span class="produto-badge novo">Novo</span>` : (sem ? html`<span class="produto-badge baixo">Últimas unid.</span>` : '')}
       <span style="position:relative;z-index:1">${emojiDoProduto(p)}</span>
     </div>
     <div>

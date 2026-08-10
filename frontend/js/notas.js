@@ -14,11 +14,11 @@ function _desenharGridNotas() {
     if (!grid) return;
 
     if (notas.length === 0) {
-        grid.innerHTML = `<div style="color:var(--text-muted);font-size:13px;grid-column:1/-1;text-align:center;padding:40px"><i class="fa-solid fa-note-sticky" style="font-size:32px;display:block;margin-bottom:12px;opacity:.3"></i>Nenhuma nota. Clique em "Nova Nota" para criar.</div>`;
+        grid.innerHTML = html`<div style="color:var(--text-muted);font-size:13px;grid-column:1/-1;text-align:center;padding:40px"><i class="fa-solid fa-note-sticky" style="font-size:32px;display:block;margin-bottom:12px;opacity:.3"></i>Nenhuma nota. Clique em "Nova Nota" para criar.</div>`;
         return;
     }
 
-    grid.innerHTML = notas.map(n => `
+    grid.innerHTML = notas.map(n => html`
         <div class="nota-card" style="background:${n.cor || 'var(--bg-card)'}">
             <div class="nota-card-header">
                 <h4>${n.titulo}</h4>

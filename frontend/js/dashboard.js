@@ -59,7 +59,7 @@ function _renderizarAlertasDashboard(alertas) {
     }
 
     container.style.display = 'block';
-    container.innerHTML = itens.map(a => `
+    container.innerHTML = itens.map(a => html`
         <div class="dash-alerta" onclick="mostrarSecao('${a.secao}')" style="border-left-color:${a.cor}">
             <i class="fa-solid ${a.icone}" style="color:${a.cor}"></i>
             <span>${a.texto}</span>

@@ -2,6 +2,7 @@
 // ESTOQUE
 // ======================================
 const { z } = require('zod');
+const { Prisma } = require('@prisma/client');
 const prisma = require('../lib/prisma');
 const ApiError = require('../utils/ApiError');
 const asyncHandler = require('../utils/asyncHandler');
@@ -81,7 +82,10 @@ const criticos = asyncHandler(async (req, res) => {
 
 const resumo = asyncHandler(async (req, res) => {
   const produtos = await prisma.produto.findMany({ where: { ativo: true } });
-  const valorTotalEstoque = produtos.reduce((s, p) => s + p.estoque * p.custo, 0);
+  const valorTotalEstoque = produtos.reduce(
+    (soma, p) => soma.add(new Prisma.Decimal(p.custo).mul(p.estoque)),
+    new Prisma.Decimal(0)
+  );
   const criticos = produtos.filter(p => p.estoque <= p.estoqueMin && p.estoque > 0).length;
   const zerados = produtos.filter(p => p.estoque === 0).length;
 

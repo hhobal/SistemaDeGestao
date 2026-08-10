@@ -10,6 +10,7 @@
 // lançamento de receita ali (ver pedidos.service.js e os.service.js).
 // Somando essa tabela, o faturamento sempre reflete os dois canais
 // automaticamente, sem duplicar lógica de agregação.
+const { Prisma } = require('@prisma/client');
 const prisma = require('../lib/prisma');
 
 async function faturamentoMensal(mesesAtras = 12) {
@@ -21,7 +22,7 @@ async function faturamentoMensal(mesesAtras = 12) {
   const porMes = {};
   for (const l of lancamentos) {
     const chave = `${l.data.getFullYear()}-${String(l.data.getMonth() + 1).padStart(2, '0')}`;
-    porMes[chave] = (porMes[chave] || 0) + l.valor;
+    porMes[chave] = (porMes[chave] || new Prisma.Decimal(0)).add(new Prisma.Decimal(l.valor));
   }
 
   return Object.keys(porMes).sort().slice(-mesesAtras).map(chave => ({ mes: chave, total: porMes[chave] }));
@@ -50,12 +51,17 @@ async function topClientes(limite = 5) {
   for (const l of lancamentos) {
     const cliente = l.pedido?.cliente || l.os?.cliente;
     if (!cliente) continue; // lançamento manual sem cliente associado
-    if (!porCliente[cliente.id]) porCliente[cliente.id] = { id: cliente.id, nome: cliente.nome, total: 0, compras: 0 };
-    porCliente[cliente.id].total += l.valor;
+    if (!porCliente[cliente.id]) {
+      porCliente[cliente.id] = { id: cliente.id, nome: cliente.nome, total: new Prisma.Decimal(0), compras: 0 };
+    }
+    porCliente[cliente.id].total = porCliente[cliente.id].total.add(new Prisma.Decimal(l.valor));
     porCliente[cliente.id].compras += 1;
   }
 
-  return Object.values(porCliente).sort((a, b) => b.total - a.total).slice(0, limite);
+  // .cmp() em vez de b.total - a.total: a subtração converteria os
+  // Decimal para número e a ordenação poderia trocar dois clientes com
+  // valores muito próximos.
+  return Object.values(porCliente).sort((a, b) => b.total.cmp(a.total)).slice(0, limite);
 }
 
 async function distribuicaoStatusOS() {

@@ -1,6 +1,7 @@
 // ======================================
 // RELATÓRIOS
 // ======================================
+const { Prisma } = require('@prisma/client');
 const prisma = require('../lib/prisma');
 const asyncHandler = require('../utils/asyncHandler');
 const relatoriosService = require('../services/relatorios.service');
@@ -35,9 +36,11 @@ const produtosMaisVendidos = asyncHandler(async (req, res) => {
   const validos = itens.filter(i => i.pedido.status !== 'cancelado');
   const porProduto = {};
   for (const i of validos) {
-    if (!porProduto[i.produtoId]) porProduto[i.produtoId] = { id: i.produtoId, nome: i.produto.nome, quantidade: 0, total: 0 };
+    if (!porProduto[i.produtoId]) {
+      porProduto[i.produtoId] = { id: i.produtoId, nome: i.produto.nome, quantidade: 0, total: new Prisma.Decimal(0) };
+    }
     porProduto[i.produtoId].quantidade += i.quantidade;
-    porProduto[i.produtoId].total += i.subtotal;
+    porProduto[i.produtoId].total = porProduto[i.produtoId].total.add(new Prisma.Decimal(i.subtotal));
   }
 
   const ranking = Object.values(porProduto).sort((a, b) => b.quantidade - a.quantidade).slice(0, limite);

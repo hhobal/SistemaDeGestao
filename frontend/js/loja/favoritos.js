@@ -32,10 +32,10 @@ function renderizarFavoritosPanel() {
   const itens = ids.map(id => produtosCatalogo.find(p => p.id === id)).filter(Boolean);
 
   if (itens.length === 0) {
-    cont.innerHTML = `<div class="carrinho-vazio"><i class="fa-solid fa-heart"></i>Você ainda não favoritou nada.<br>Toque no coração de um produto para salvá-lo aqui.</div>`;
+    cont.innerHTML = html`<div class="carrinho-vazio"><i class="fa-solid fa-heart"></i>Você ainda não favoritou nada.<br>Toque no coração de um produto para salvá-lo aqui.</div>`;
     return;
   }
-  cont.innerHTML = itens.map(p => `
+  cont.innerHTML = itens.map(p => html`
     <div class="fav-item">
       <div class="fav-item-img ${gradClasseDoProduto(p)}">${emojiDoProduto(p)}</div>
       <div class="fav-item-info">

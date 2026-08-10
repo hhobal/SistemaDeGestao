@@ -45,8 +45,8 @@ describe('criarPedido', () => {
       pagamento: 'cartao'
     });
 
-    expect(pedido.total).toBe(200);
-    expect(pedido.itens[0].precoUnitario).toBe(100);
+    expect(Number(pedido.total)).toBe(200);
+    expect(Number(pedido.itens[0].precoUnitario)).toBe(100);
   });
 
   it('congela nome e preço do produto no item do pedido (snapshot histórico)', async () => {
@@ -67,10 +67,10 @@ describe('criarPedido', () => {
 
     const itens = await prisma.itemPedido.findMany({ where: { pedidoId: pedido.id } });
     expect(itens[0].nome).toBe('Teclado');
-    expect(itens[0].precoUnitario).toBe(200);
+    expect(Number(itens[0].precoUnitario)).toBe(200);
 
     const recarregado = await prisma.pedido.findUnique({ where: { id: pedido.id } });
-    expect(recarregado.total).toBe(200);
+    expect(Number(recarregado.total)).toBe(200);
   });
 
   it('gera números sequenciais com zero à esquerda', async () => {
@@ -106,9 +106,9 @@ describe('criarPedido', () => {
     const receita = lancamentos.find(l => l.tipo === 'receita');
     const despesa = lancamentos.find(l => l.tipo === 'despesa');
 
-    expect(receita.valor).toBe(200);
+    expect(Number(receita.valor)).toBe(200);
     expect(receita.status).toBe('pendente');
-    expect(despesa.valor).toBe(80);
+    expect(Number(despesa.valor)).toBe(80);
     expect(despesa.status).toBe('pago');
   });
 });
@@ -245,5 +245,59 @@ describe('alterarStatusPedido', () => {
     await expect(
       alterarStatusPedido(999999, 'entregue', 'Tester')
     ).rejects.toMatchObject({ status: 404 });
+  });
+});
+
+describe('Precisão monetária (Decimal, não Float)', () => {
+  it('soma centavos sem erro de arredondamento', async () => {
+    const cliente = await criarCliente();
+    // 0,10 + 0,20 dá 0.30000000000000004 em ponto flutuante.
+    const a = await criarProduto({ nome: 'Item A', preco: 0.10, custo: 0, estoque: 10 });
+    const b = await criarProduto({ nome: 'Item B', preco: 0.20, custo: 0, estoque: 10 });
+
+    const pedido = await criarPedido({
+      clienteId: cliente.id,
+      itensCarrinho: [
+        { produtoId: a.id, quantidade: 1 },
+        { produtoId: b.id, quantidade: 1 }
+      ],
+      pagamento: 'pix'
+    });
+
+    expect(pedido.total.toFixed(2)).toBe('0.30');
+    expect(pedido.total.equals(new (require('@prisma/client').Prisma.Decimal)('0.30'))).toBe(true);
+  });
+
+  it('multiplica preço quebrado por quantidade grande sem desvio', async () => {
+    const cliente = await criarCliente();
+    // 12,10 x 1000 acumula erro visível quando somado em float.
+    const p = await criarProduto({ nome: 'Item', preco: 12.10, custo: 0, estoque: 5000 });
+
+    const pedido = await criarPedido({
+      clienteId: cliente.id,
+      itensCarrinho: [{ produtoId: p.id, quantidade: 1000 }],
+      pagamento: 'pix'
+    });
+
+    expect(pedido.total.toFixed(2)).toBe('12100.00');
+  });
+
+  it('preserva o valor exato ao ler de volta do banco', async () => {
+    const cliente = await criarCliente();
+    const p = await criarProduto({ nome: 'Item', preco: 19.99, custo: 7.33, estoque: 10 });
+
+    const pedido = await criarPedido({
+      clienteId: cliente.id,
+      itensCarrinho: [{ produtoId: p.id, quantidade: 3 }],
+      pagamento: 'pix'
+    });
+
+    const doBanco = await prisma.pedido.findUnique({ where: { id: pedido.id } });
+    expect(doBanco.total.toFixed(2)).toBe('59.97');
+
+    const cmv = await prisma.lancamento.findFirst({
+      where: { pedidoId: pedido.id, tipo: 'despesa' }
+    });
+    expect(cmv.valor.toFixed(2)).toBe('21.99');
   });
 });

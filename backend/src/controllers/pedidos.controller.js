@@ -2,6 +2,7 @@
 // PEDIDOS
 // ======================================
 const { z } = require('zod');
+const { Prisma } = require('@prisma/client');
 const prisma = require('../lib/prisma');
 const ApiError = require('../utils/ApiError');
 const asyncHandler = require('../utils/asyncHandler');
@@ -70,8 +71,16 @@ const obter = asyncHandler(async (req, res) => {
   });
   if (!pedido) throw ApiError.naoEncontrado('Pedido não encontrado.');
 
-  const custoTotal = pedido.itens.reduce((s, item) => s + (item.produto?.custo || 0) * item.quantidade, 0);
-  res.json({ ...pedido, custoTotal, lucroBruto: pedido.total - custoTotal });
+  // Aritmética com Decimal (ver comentário em services/pedidos.service.js).
+  const custoTotal = pedido.itens.reduce(
+    (soma, item) => soma.add(new Prisma.Decimal(item.produto?.custo || 0).mul(item.quantidade)),
+    new Prisma.Decimal(0)
+  );
+  res.json({
+    ...pedido,
+    custoTotal,
+    lucroBruto: new Prisma.Decimal(pedido.total).sub(custoTotal)
+  });
 });
 
 const alterarStatus = asyncHandler(async (req, res) => {

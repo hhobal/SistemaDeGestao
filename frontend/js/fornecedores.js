@@ -38,10 +38,10 @@ function _desenharTabelaFornecedores() {
     if (pagina.length === 0) {
         tabela.innerHTML = emptyState('Nenhum fornecedor encontrado.', 'fa-truck');
     } else {
-        tabela.innerHTML = pagina.map(f => `
+        tabela.innerHTML = pagina.map(f => html`
             <tr>
                 <td>${f.id}</td>
-                <td><strong>${f.empresa}</strong>${f.cnpj ? `<br><span style="font-size:11px;color:var(--text-muted)">${f.cnpj}</span>` : ''}</td>
+                <td><strong>${f.empresa}</strong>${f.cnpj ? html`<br><span style="font-size:11px;color:var(--text-muted)">${f.cnpj}</span>` : ''}</td>
                 <td>${f.contato || '—'}</td>
                 <td>${f.telefone || '—'}</td>
                 <td>${f.email || '—'}</td>

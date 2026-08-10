@@ -23,7 +23,7 @@ function _desenharTabelaUsuarios() {
 
     tabela.innerHTML = usuarios.map(u => {
         const euMesmo = sessao && String(sessao.id) === String(u.id);
-        return `
+        return html`
         <tr>
             <td>${u.id}</td>
             <td>
@@ -39,7 +39,7 @@ function _desenharTabelaUsuarios() {
             <td><span style="color:${perfilCor[u.perfil]||'var(--text-muted)'}"><i class="fa-solid fa-circle" style="font-size:8px;margin-right:4px"></i>${u.perfil}</span></td>
             <td>
                 <button class="btn-icon" title="Editar" onclick="abrirModalUsuario(${u.id})"><i class="fa-solid fa-pen"></i></button>
-                ${!euMesmo ? `<button class="btn-icon btn-icon-danger" title="Excluir" onclick="excluirUsuario(${u.id})"><i class="fa-solid fa-trash"></i></button>` : ''}
+                ${!euMesmo ? html`<button class="btn-icon btn-icon-danger" title="Excluir" onclick="excluirUsuario(${u.id})"><i class="fa-solid fa-trash"></i></button>` : ''}
             </td>
         </tr>`;
     }).join('');

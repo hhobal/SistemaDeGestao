@@ -32,7 +32,7 @@ function renderizarCardsEstoque() {
 
     const prods = carregarProdutos();
     if (prods.length === 0) {
-        container.innerHTML = `<div style="color:var(--text-muted);font-size:13px;grid-column:1/-1;text-align:center;padding:24px"><i class="fa-solid fa-warehouse" style="font-size:32px;display:block;margin-bottom:8px;opacity:.3"></i>Nenhum produto cadastrado.</div>`;
+        container.innerHTML = html`<div style="color:var(--text-muted);font-size:13px;grid-column:1/-1;text-align:center;padding:24px"><i class="fa-solid fa-warehouse" style="font-size:32px;display:block;margin-bottom:8px;opacity:.3"></i>Nenhum produto cadastrado.</div>`;
         return;
     }
 
@@ -45,7 +45,7 @@ function renderizarCardsEstoque() {
         if (min > 0 && estq <= min) { cor = 'var(--danger)'; icone = 'fa-triangle-exclamation'; status = 'Crítico'; }
         else if (estq <= min * 1.5 + 3) { cor = 'var(--warning)'; icone = 'fa-circle-exclamation'; status = 'Baixo'; }
 
-        return `
+        return html`
         <div class="card estoque-card" style="border-left:3px solid ${cor}">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
                 <span style="font-size:11px;color:var(--text-muted);font-weight:500">${p.categoria||'—'}</span>
@@ -76,7 +76,7 @@ function renderizarMovimentos() {
         const cor = m.tipo === 'entrada' ? 'var(--success)' : 'var(--danger)';
         const icone = m.tipo === 'entrada' ? 'fa-arrow-down' : 'fa-arrow-up';
         const dataFmt = m.data ? new Date(m.data).toLocaleDateString('pt-BR') : '—';
-        return `
+        return html`
         <tr>
             <td>${dataFmt}</td>
             <td>${m.produto?.nome || '—'}</td>

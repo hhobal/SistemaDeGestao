@@ -63,6 +63,10 @@ model Cliente {
   pedidos       Pedido[]
   ordensServico OrdemServico[]
 
+  // Busca por nome e filtro por status na listagem do painel.
+  @@index([nome])
+  @@index([status])
+
   @@map("clientes")
 }
 
@@ -86,8 +90,8 @@ model Produto {
   nome       String
   codigo     String?  @unique
   categoria  String?
-  preco      Float    @default(0)
-  custo      Float    @default(0)
+  preco      Decimal  @default(0) @db.Decimal(12, 2)
+  custo      Decimal  @default(0) @db.Decimal(12, 2)
   estoque    Int      @default(0)
   estoqueMin Int      @default(0)
   descricao  String?
@@ -96,6 +100,11 @@ model Produto {
 
   itensPedido ItemPedido[]
   movimentos  Movimento[]
+
+  @@index([nome])
+  @@index([categoria])
+  // Vitrine da loja filtra por ativo + estoque a cada carregamento.
+  @@index([ativo, estoque])
 
   @@map("produtos")
 }
@@ -107,7 +116,7 @@ model Pedido {
   clienteId       Int
   cliente         Cliente  @relation(fields: [clienteId], references: [id])
   enderecoEntrega String?
-  total           Float    @default(0)
+  total           Decimal  @default(0) @db.Decimal(12, 2)
   pagamento       String // cartao | pix | boleto
   parcelas        Int      @default(1)
   status          String   @default("pendente") // pendente|processando|enviado|entregue|cancelado
@@ -115,6 +124,12 @@ model Pedido {
 
   itens       ItemPedido[]
   lancamentos Lancamento[]
+
+  // O PostgreSQL nao cria indice em chave estrangeira automaticamente:
+  // sem este, todo include de cliente varre a tabela inteira.
+  @@index([clienteId])
+  @@index([status])
+  @@index([data])
 
   @@map("pedidos")
 }
@@ -126,9 +141,12 @@ model ItemPedido {
   produtoId     Int
   produto       Produto @relation(fields: [produtoId], references: [id])
   nome          String // snapshot do nome no momento da compra
-  precoUnitario Float // snapshot do preço no momento da compra
+  precoUnitario Decimal @db.Decimal(12, 2) // snapshot do preço no momento da compra
   quantidade    Int
-  subtotal      Float
+  subtotal      Decimal @db.Decimal(12, 2)
+
+  @@index([pedidoId])
+  @@index([produtoId])
 
   @@map("itens_pedido")
 }
@@ -142,7 +160,7 @@ model OrdemServico {
   observacao    String?
   status        String    @default("aberta") // aberta|andamento|concluida|cancelada
   prioridade    String    @default("normal") // baixa|normal|alta|urgente
-  valor         Float     @default(0)
+  valor         Decimal   @default(0) @db.Decimal(12, 2)
   clienteId     Int?
   cliente       Cliente?  @relation(fields: [clienteId], references: [id])
   responsavelId Int?
@@ -151,6 +169,11 @@ model OrdemServico {
   dataConclusao DateTime?
 
   lancamentos Lancamento[]
+
+  @@index([clienteId])
+  @@index([responsavelId])
+  @@index([status])
+  @@index([dataAbertura])
 
   @@map("ordens_servico")
 }
@@ -166,6 +189,9 @@ model Movimento {
   responsavel String?
   data        DateTime @default(now())
 
+  // Historico por produto, sempre ordenado por data.
+  @@index([produtoId, data])
+
   @@map("movimentos_estoque")
 }
 
@@ -175,7 +201,7 @@ model Lancamento {
   descricao String
   categoria String?
   tipo      String // receita | despesa
-  valor     Float
+  valor     Decimal  @db.Decimal(12, 2)
   status    String   @default("pendente") // pago | pendente
   data      DateTime @default(now())
 
@@ -183,6 +209,12 @@ model Lancamento {
   pedido   Pedido?       @relation(fields: [pedidoId], references: [id])
   osId     Int?
   os       OrdemServico? @relation(fields: [osId], references: [id])
+
+  @@index([pedidoId])
+  @@index([osId])
+  // Relatorios e cards filtram por tipo/status e agrupam por data.
+  @@index([data])
+  @@index([tipo, status])
 
   @@map("lancamentos_financeiros")
 }
@@ -195,6 +227,8 @@ model Evento {
   hora      String?
   descricao String?
   tipo      String   @default("outro") // reuniao|tarefa|compromisso|outro
+
+  @@index([data])
 
   @@map("eventos")
 }
@@ -209,6 +243,9 @@ model Tarefa {
   dataLimite    DateTime?
   responsavelId Int?
   responsavel   Usuario?  @relation("ResponsavelTarefa", fields: [responsavelId], references: [id])
+
+  @@index([responsavelId])
+  @@index([status])
 
   @@map("tarefas")
 }
@@ -232,6 +269,8 @@ model LogAcao {
   acao    String
   modulo  String
   detalhe String?
+
+  @@index([data])
 
   @@map("log_acoes")
 }

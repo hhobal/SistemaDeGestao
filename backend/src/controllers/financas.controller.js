@@ -8,6 +8,7 @@
 // Aqui, /resumo aceita os mesmos parâmetros de filtro de /lancamentos
 // e os cards sempre refletem exatamente o que está sendo exibido.
 const { z } = require('zod');
+const { Prisma } = require('@prisma/client');
 const prisma = require('../lib/prisma');
 const ApiError = require('../utils/ApiError');
 const asyncHandler = require('../utils/asyncHandler');
@@ -65,11 +66,17 @@ const resumo = asyncHandler(async (req, res) => {
   const where = montarWhere(req.query);
   const filtrados = await prisma.lancamento.findMany({ where, select: { tipo: true, valor: true } });
 
-  const receita = filtrados.filter(l => l.tipo === 'receita').reduce((s, l) => s + l.valor, 0);
-  const despesa = filtrados.filter(l => l.tipo === 'despesa').reduce((s, l) => s + l.valor, 0);
+  // Somatório com Decimal: é justamente aqui, acumulando muitas linhas,
+  // que o erro de ponto flutuante deixa de ser invisível.
+  const somar = tipo => filtrados
+    .filter(l => l.tipo === tipo)
+    .reduce((soma, l) => soma.add(new Prisma.Decimal(l.valor)), new Prisma.Decimal(0));
+
+  const receita = somar('receita');
+  const despesa = somar('despesa');
   const pendentes = await prisma.lancamento.count({ where: { ...where, AND: [...where.AND, { status: 'pendente' }] } });
 
-  res.json({ receita, despesa, saldo: receita - despesa, pendentes });
+  res.json({ receita, despesa, saldo: receita.sub(despesa), pendentes });
 });
 
 // Série mensal (últimos 12 meses) para o gráfico de faturamento.

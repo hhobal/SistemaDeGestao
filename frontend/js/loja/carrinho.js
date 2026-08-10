@@ -51,10 +51,10 @@ function renderizarCarrinho() {
   btnFinalizar.disabled = carrinho.length === 0;
 
   if (carrinho.length === 0) {
-    cont.innerHTML = `<div class="carrinho-vazio"><i class="fa-solid fa-cart-shopping"></i>Seu carrinho está vazio.<br>Adicione produtos para começar.</div>`;
+    cont.innerHTML = html`<div class="carrinho-vazio"><i class="fa-solid fa-cart-shopping"></i>Seu carrinho está vazio.<br>Adicione produtos para começar.</div>`;
     return;
   }
-  cont.innerHTML = carrinho.map(i => `
+  cont.innerHTML = carrinho.map(i => html`
     <div class="carrinho-item">
       <div class="carrinho-item-img ${'grad-' + (hashStr(i.categoria||i.nome) % 8)}">${EMOJI_CAT[i.categoria] || '📦'}</div>
       <div class="carrinho-item-info">

@@ -14,7 +14,7 @@ function renderizarRecentes() {
 
   if (itens.length === 0) { secao.style.display = 'none'; return; }
   secao.style.display = '';
-  cont.innerHTML = itens.map(p => `
+  cont.innerHTML = itens.map(p => html`
     <div class="recente-card" onclick="abrirQuickView(${p.id})">
       <div class="recente-img ${gradClasseDoProduto(p)}">${emojiDoProduto(p)}</div>
       <div class="recente-body">
@@ -52,7 +52,7 @@ function filtrarProdutos() {
 function mostrarSkeleton() {
   const grid = document.getElementById('gridProdutos');
   grid.classList.remove('modo-lista');
-  grid.innerHTML = Array.from({length:8}).map(() => `
+  grid.innerHTML = Array.from({length:8}).map(() => html`
     <div class="skeleton-card">
       <div class="skeleton-img skeleton-shimmer"></div>
       <div class="skeleton-line skeleton-shimmer w40"></div>
@@ -80,15 +80,15 @@ async function carregarProdutosNaTela() {
     document.getElementById('statCategorias').textContent = categorias.length;
     processarEExibir();
   } catch (erro) {
-    grid.innerHTML = `<div class="estado-vazio"><i class="fa-solid fa-triangle-exclamation"></i>${erro.message}</div>`;
+    grid.innerHTML = html`<div class="estado-vazio"><i class="fa-solid fa-triangle-exclamation"></i>${erro.message}</div>`;
   }
 }
 
 function _desenharFiltrosCategorias(categorias) {
   const filtrosCont = document.getElementById('filtrosCats');
-  filtrosCont.innerHTML = `<span class="filtro-tag ${!catAtiva?'active':''}" onclick="setCategoria('')" data-cat="">Todos</span>`;
+  filtrosCont.innerHTML = html`<span class="filtro-tag ${!catAtiva?'active':''}" onclick="setCategoria('')" data-cat="">Todos</span>`;
   categorias.forEach(c => {
-    filtrosCont.innerHTML += `<span class="filtro-tag ${catAtiva===c?'active':''}" onclick="setCategoria('${c}')" data-cat="${c}">${EMOJI_CAT[c]||''} ${c}</span>`;
+    filtrosCont.innerHTML += html`<span class="filtro-tag ${catAtiva===c?'active':''}" onclick="setCategoria('${c}')" data-cat="${c}">${EMOJI_CAT[c]||''} ${c}</span>`;
   });
 }
 
@@ -137,7 +137,7 @@ function _desenharGridProdutos(produtos) {
   const favoritos = lojaCarregarFavoritos();
 
   if (produtos.length === 0) {
-    grid.innerHTML = `<div class="estado-vazio">
+    grid.innerHTML = html`<div class="estado-vazio">
       <i class="fa-solid fa-magnifying-glass"></i>
       Nenhum produto encontrado com esses filtros.
       <div><button class="btn-p btn-p-sec" onclick="limparFiltros()">Limpar filtros</button></div>
@@ -149,10 +149,10 @@ function _desenharGridProdutos(produtos) {
     const sem = estoqueBaixo(p);
     const novo = ehProdutoNovo(p);
     const ehFav = favoritos.includes(p.id);
-    return `
+    return html`
     <div class="produto-card" onclick="abrirQuickView(${p.id})">
       <div class="produto-img ${gradClasseDoProduto(p)}">
-        ${novo ? `<span class="produto-badge novo">Novo</span>` : (sem ? `<span class="produto-badge baixo">Últimas unid.</span>` : '')}
+        ${novo ? html`<span class="produto-badge novo">Novo</span>` : (sem ? html`<span class="produto-badge baixo">Últimas unid.</span>` : '')}
         <button class="btn-fav ${ehFav?'ativo':''}" onclick="toggleFavorito(${p.id}, event)" title="Favoritar"><i class="fa-solid fa-heart"></i></button>
         <span style="position:relative;z-index:1">${emojiDoProduto(p)}</span>
         <span class="btn-quickview" onclick="event.stopPropagation();abrirQuickView(${p.id})"><i class="fa-solid fa-eye"></i> Visualizar</span>

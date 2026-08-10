@@ -61,8 +61,8 @@ function _desenharTabelaPedidos() {
     tabela.innerHTML = pagina.map(p => {
         const statusFinal = ['entregue', 'cancelado'].includes(p.status);
         const statusCampo = statusFinal
-            ? `<span class="status-badge ${p.status === 'entregue' ? 'status-entregue' : 'status-cancelado'}">${statusNome[p.status]}</span>`
-            : `<select class="status-select" onchange="alterarStatusPedido(${p.id}, this.value)" style="background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-primary);padding:4px 8px;border-radius:6px;font-size:12px;cursor:pointer">
+            ? html`<span class="status-badge ${p.status === 'entregue' ? 'status-entregue' : 'status-cancelado'}">${statusNome[p.status]}</span>`
+            : html`<select class="status-select" onchange="alterarStatusPedido(${p.id}, this.value)" style="background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-primary);padding:4px 8px;border-radius:6px;font-size:12px;cursor:pointer">
                  <option value="pendente"    ${p.status==='pendente'   ?'selected':''}>Pendente</option>
                  <option value="processando" ${p.status==='processando'?'selected':''}>Em preparo</option>
                  <option value="enviado"     ${p.status==='enviado'    ?'selected':''}>Enviado</option>
@@ -70,7 +70,7 @@ function _desenharTabelaPedidos() {
                  <option value="cancelado"   ${p.status==='cancelado'  ?'selected':''}>Cancelado</option>
                </select>`;
 
-        return `
+        return html`
         <tr>
             <td><span style="font-family:monospace;font-weight:700;color:var(--accent)">#${p.numero}</span></td>
             <td>
@@ -125,12 +125,13 @@ async function verDetalhesPedido(id) {
     }
 
     const fmt = v => Number(v||0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
-    const custoTotal = p.custoTotal ?? 0;
-    const lucro = p.lucroBruto ?? (Number(p.total||0) - custoTotal);
+    // A API manda Decimal como string; Number() antes de qualquer conta.
+    const custoTotal = Number(p.custoTotal ?? 0);
+    const lucro = Number(p.lucroBruto ?? (Number(p.total || 0) - custoTotal));
 
     const pagNome = { cartao:'Cartão de crédito', pix:'PIX', boleto:'Boleto bancário' };
 
-    document.getElementById('detalhesPedidoConteudo').innerHTML = `
+    document.getElementById('detalhesPedidoConteudo').innerHTML = html`
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
             <div>
                 <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">Pedido</div>
@@ -140,7 +141,7 @@ async function verDetalhesPedido(id) {
             <div>
                 <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">Pagamento</div>
                 <div style="font-size:14px;font-weight:600">${pagNome[p.pagamento]||p.pagamento}</div>
-                ${p.pagamento==='cartao' && p.parcelas>1 ? `<div style="font-size:12px;color:var(--text-muted)">${p.parcelas}× sem juros</div>` : ''}
+                ${p.pagamento==='cartao' && p.parcelas>1 ? html`<div style="font-size:12px;color:var(--text-muted)">${p.parcelas}× sem juros</div>` : ''}
             </div>
         </div>
 
@@ -149,14 +150,14 @@ async function verDetalhesPedido(id) {
             <div style="font-weight:600">${p.cliente?.nome || '—'}</div>
             <div style="font-size:12px;color:var(--text-muted)">${p.cliente?.email||''}</div>
             <div style="font-size:12px;color:var(--text-muted)">${p.cliente?.telefone||''}</div>
-            ${p.enderecoEntrega ? `<div style="font-size:12px;color:var(--text-muted);margin-top:4px"><i class="fa-solid fa-location-dot" style="font-size:10px"></i> ${p.enderecoEntrega}</div>` : ''}
+            ${p.enderecoEntrega ? html`<div style="font-size:12px;color:var(--text-muted);margin-top:4px"><i class="fa-solid fa-location-dot" style="font-size:10px"></i> ${p.enderecoEntrega}</div>` : ''}
         </div>
 
         <div style="background:var(--bg-secondary);border-radius:8px;padding:14px;margin-bottom:14px">
             <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;font-weight:600">ITENS DO PEDIDO</div>
             ${(p.itens||[]).map(item => {
                 const custoItem = Number(item.produto?.custo||0) * item.quantidade;
-                return `
+                return html`
                 <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
                     <div>
                         <div style="font-size:13px;font-weight:500">${item.nome}</div>
@@ -164,10 +165,10 @@ async function verDetalhesPedido(id) {
                     </div>
                     <div style="text-align:right">
                         <div style="font-weight:700;color:var(--success)">${fmt(item.subtotal)}</div>
-                        ${custoItem > 0 ? `<div style="font-size:10px;color:var(--text-muted)">custo: ${fmt(custoItem)}</div>` : ''}
+                        ${custoItem > 0 ? html`<div style="font-size:10px;color:var(--text-muted)">custo: ${fmt(custoItem)}</div>` : ''}
                     </div>
                 </div>`;
-            }).join('')}
+            })}
         </div>
 
         <div style="background:var(--bg-secondary);border-radius:8px;padding:14px">
@@ -175,7 +176,7 @@ async function verDetalhesPedido(id) {
                 <span style="color:var(--text-muted)">Subtotal</span>
                 <span>${fmt(p.total)}</span>
             </div>
-            ${custoTotal > 0 ? `
+            ${custoTotal > 0 ? html`
             <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px">
                 <span style="color:var(--text-muted)">Custo total (CMV)</span>
                 <span style="color:var(--danger)">−${fmt(custoTotal)}</span>

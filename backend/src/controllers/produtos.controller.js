@@ -74,13 +74,39 @@ const listarPublico = asyncHandler(async (req, res) => {
     ]
   };
 
-  const produtos = await prisma.produto.findMany({ where, orderBy: { nome: 'asc' } });
+  // `select` explícito: sem ele o Prisma devolve a linha inteira, e a
+  // loja é pública. O campo `custo` vazava a margem de lucro para
+  // qualquer visitante que abrisse o DevTools — quem compra sabia
+  // exatamente quanto o produto custou. Listar campo a campo também
+  // garante que colunas internas criadas no futuro não vazem sozinhas.
+  const produtos = await prisma.produto.findMany({
+    where,
+    orderBy: { nome: 'asc' },
+    select: {
+      id: true,
+      nome: true,
+      categoria: true,
+      preco: true,
+      descricao: true,
+      estoque: true,
+      estoqueMin: true, // usado no aviso de "últimas unidades"
+      criadoEm: true    // usado no selo de "novo"
+    }
+  });
   res.json(produtos);
 });
 
 const listarCategorias = asyncHandler(async (req, res) => {
+  // Os mesmos critérios de listarPublico: sem isso, a loja exibia
+  // categorias que não têm nenhum produto à venda, e o cliente clicava
+  // no filtro para receber uma vitrine vazia.
   const categorias = await prisma.produto.findMany({
-    where: { categoria: { not: null } },
+    where: {
+      categoria: { not: null },
+      ativo: true,
+      preco: { gt: 0 },
+      estoque: { gt: 0 }
+    },
     select: { categoria: true },
     distinct: ['categoria']
   });

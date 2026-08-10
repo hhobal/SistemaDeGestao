@@ -30,7 +30,7 @@ function fecharCheckout() {
 
 function preencherClienteInfo() {
   const sessaoCliente = lojaCarregarCliente();
-  document.getElementById('clienteInfo').innerHTML = `
+  document.getElementById('clienteInfo').innerHTML = html`
     <strong>${sessaoCliente.nome}</strong><br>
     <span style="font-size:12px;color:var(--muted)">${sessaoCliente.email}</span>`;
 }
@@ -41,7 +41,7 @@ function preencherParcelas() {
   sel.innerHTML = '';
   for (let i = 1; i <= 6; i++) {
     const v = total / i;
-    sel.innerHTML += `<option value="${i}">${i}× de ${fmt(v)}${i===1?' (à vista)':' sem juros'}</option>`;
+    sel.innerHTML += html`<option value="${i}">${i}× de ${fmt(v)}${i===1?' (à vista)':' sem juros'}</option>`;
   }
 }
 
@@ -102,13 +102,13 @@ function voltarStep() {
 
 function preencherResumo() {
   const total = totalCarrinho();
-  document.getElementById('resumoItens').innerHTML = carrinho.map(i => `
+  document.getElementById('resumoItens').innerHTML = carrinho.map(i => html`
     <div class="resumo-item">
       <span>${i.nome} ×${i.qtd}</span>
       <span>${fmt(i.preco * i.qtd)}</span>
     </div>`).join('');
   const pagNome = { cartao:'Cartão de crédito', pix:'PIX', boleto:'Boleto' };
-  document.getElementById('resumoTotal').innerHTML = `
+  document.getElementById('resumoTotal').innerHTML = html`
     <div class="resumo-item"><span style="color:var(--muted)">Pagamento</span><span>${pagNome[pagSelecionado]}</span></div>
     <div class="resumo-total"><span>Total</span><span style="color:var(--success)">${fmt(total)}</span></div>`;
 }

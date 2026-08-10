@@ -11,6 +11,16 @@ const { errorHandler, rotaNaoEncontrada } = require('./middleware/errorHandler')
 
 const app = express();
 
+// Em produção a API roda atrás do proxy do Render. Sem isto, req.ip
+// devolve o endereço do proxy para todo mundo: o limitador de tentativas
+// de login contaria todos os usuários no mesmo balde e 10 erros de senha
+// de um visitante bloqueariam o sistema inteiro. O valor 1 confia apenas
+// no proxy imediatamente à frente — confiar em toda a cadeia permitiria
+// forjar o IP pelo cabeçalho X-Forwarded-For e escapar do limite.
+if (env.ambiente === 'production') {
+  app.set('trust proxy', 1);
+}
+
 // ─── MIDDLEWARES GLOBAIS ────────────────────────────────
 app.use(helmet());
 app.use(cors({

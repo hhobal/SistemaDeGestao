@@ -45,13 +45,19 @@ function _desenharTabelaProdutos() {
             const estq = Number(p.estoque || 0);
             const min  = Number(p.estoqueMin || 0);
             const corEstq = min > 0 && estq <= min ? 'var(--danger)' : estq <= min * 1.5 + 5 ? 'var(--warning)' : 'var(--success)';
-            const margem = p.preco && p.custo ? (((p.preco - p.custo) / p.preco) * 100).toFixed(0) : null;
-            return `
+            // Number() explícito: valores monetários chegam da API como
+            // string (o Prisma serializa Decimal assim, para não perder
+            // precisão em JSON). Sem converter, "0.00" seria truthy e a
+            // margem viraria uma divisão por zero.
+            const preco = Number(p.preco || 0);
+            const custo = Number(p.custo || 0);
+            const margem = preco > 0 && custo > 0 ? (((preco - custo) / preco) * 100).toFixed(0) : null;
+            return html`
             <tr>
-                <td>${p.codigo ? `<span style="font-family:monospace;font-size:12px">${p.codigo}</span>` : `<span style="color:var(--text-muted)">—</span>`}</td>
+                <td>${p.codigo ? html`<span style="font-family:monospace;font-size:12px">${p.codigo}</span>` : html`<span style="color:var(--text-muted)">—</span>`}</td>
                 <td><strong>${p.nome}</strong></td>
                 <td><span class="tag">${p.categoria || '—'}</span></td>
-                <td>${fmt(p.preco)}${margem ? `<br><span style="font-size:11px;color:var(--success)">${margem}% margem</span>` : ''}</td>
+                <td>${fmt(p.preco)}${margem ? html`<br><span style="font-size:11px;color:var(--success)">${margem}% margem</span>` : ''}</td>
                 <td style="color:${corEstq};font-weight:600">${estq}${min > 0 && estq <= min ? ' <i class="fa-solid fa-triangle-exclamation" style="font-size:10px"></i>' : ''}</td>
                 <td>
                     <button class="btn-icon" title="Editar" onclick="abrirModalProduto(${p.id})"><i class="fa-solid fa-pen"></i></button>
@@ -67,7 +73,7 @@ function _desenharTabelaProdutos() {
     const sel = document.getElementById('filtroCategoriaProduto');
     if (sel && sel.children.length <= 1) {
         const cats = [...new Set(produtos.map(p => p.categoria).filter(Boolean))];
-        cats.forEach(c => { sel.innerHTML += `<option value="${c}">${c}</option>`; });
+        cats.forEach(c => { sel.innerHTML += html`<option value="${c}">${c}</option>`; });
     }
 }
 

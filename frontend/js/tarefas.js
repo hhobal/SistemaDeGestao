@@ -29,7 +29,7 @@ function _desenharKanban() {
             const dataLimiteISO = t.dataLimite ? String(t.dataLimite).split('T')[0] : null;
             const atrasada = dataLimiteISO && dataLimiteISO < hoje && t.status !== 'concluido';
             const resp = t.responsavel?.nome || null;
-            return `
+            return html`
             <div class="kanban-card ${atrasada ? 'kanban-card-atrasada' : ''}"
                  draggable="true"
                  ondragstart="dragStartTarefa(${t.id})"
@@ -42,15 +42,18 @@ function _desenharKanban() {
                     </div>
                 </div>
                 <div class="kanban-card-title">${t.titulo}</div>
-                ${t.descricao ? `<div class="kanban-card-meta">${t.descricao}</div>` : ''}
+                ${t.descricao ? html`<div class="kanban-card-meta">${t.descricao}</div>` : ''}
                 <div class="kanban-card-footer">
-                    ${dataLimiteISO ? `<span style="font-size:10px;color:${atrasada ? 'var(--danger)' : 'var(--text-muted)'}"><i class="fa-solid fa-calendar-day"></i> ${new Date(dataLimiteISO+'T12:00:00').toLocaleDateString('pt-BR')}</span>` : '<span></span>'}
-                    ${resp ? `<span style="font-size:10px;color:var(--text-muted)"><i class="fa-solid fa-user"></i> ${resp.split(' ')[0]}</span>` : ''}
+                    ${dataLimiteISO ? html`<span style="font-size:10px;color:${atrasada ? 'var(--danger)' : 'var(--text-muted)'}"><i class="fa-solid fa-calendar-day"></i> ${new Date(dataLimiteISO+'T12:00:00').toLocaleDateString('pt-BR')}</span>` : '<span></span>'}
+                    ${resp ? html`<span style="font-size:10px;color:var(--text-muted)"><i class="fa-solid fa-user"></i> ${resp.split(' ')[0]}</span>` : ''}
                 </div>
             </div>`;
-        }).join('') || `<div class="kanban-vazio">Nenhuma tarefa</div>`;
+        });
 
-        return `
+        // Abaixo, a coluna vazia é decidida por cards.length e não por
+        // um "||": em JavaScript um array vazio é truthy, então o
+        // operador nunca cairia no texto alternativo.
+        return html`
         <div class="kanban-col"
              ondragover="event.preventDefault()"
              ondrop="dropTarefa('${col.id}')">
@@ -58,7 +61,7 @@ function _desenharKanban() {
                 <h4><i class="fa-solid ${col.icone}" style="color:${col.cor}"></i> ${col.label}</h4>
                 <span class="kanban-count">${lista.length}</span>
             </div>
-            <div class="kanban-col-body">${cards}</div>
+            <div class="kanban-col-body">${cards.length ? cards : html`<div class="kanban-vazio">Nenhuma tarefa</div>`}</div>
         </div>`;
     }).join('');
 }

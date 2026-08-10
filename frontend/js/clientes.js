@@ -40,10 +40,10 @@ function renderizarClientes() {
     } else {
         const statusCls = { ativo: 'status-entregue', inativo: 'status-pendente', inadimplente: 'status-cancelado' };
         const statusNome = { ativo: 'Ativo', inativo: 'Inativo', inadimplente: 'Inadimplente' };
-        tabela.innerHTML = pagina.map(c => `
+        tabela.innerHTML = pagina.map(c => html`
             <tr>
                 <td>${c.id}</td>
-                <td><strong>${c.nome}</strong>${c.cpf ? `<br><span style="font-size:11px;color:var(--text-muted)">${c.cpf}</span>` : ''}</td>
+                <td><strong>${c.nome}</strong>${c.cpf ? html`<br><span style="font-size:11px;color:var(--text-muted)">${c.cpf}</span>` : ''}</td>
                 <td>${c.email || '—'}</td>
                 <td>${c.telefone || '—'}</td>
                 <td><span class="status-badge ${statusCls[c.status||'ativo']}">${statusNome[c.status||'ativo']}</span></td>

@@ -60,14 +60,14 @@ function _desenharTabelaOS() {
             const podeEditarStatus = !['concluida', 'cancelada'].includes(os.status);
             const dataAberturaFmt = os.dataAbertura ? new Date(os.dataAbertura).toLocaleDateString('pt-BR') : '—';
             const statusSelect = podeEditarStatus
-                ? `<select class="status-select" onchange="alterarStatusOS(${os.id}, this.value)" style="background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-primary);padding:4px 8px;border-radius:6px;font-size:12px;cursor:pointer">
+                ? html`<select class="status-select" onchange="alterarStatusOS(${os.id}, this.value)" style="background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-primary);padding:4px 8px;border-radius:6px;font-size:12px;cursor:pointer">
                      <option value="aberta"    ${os.status==='aberta'   ?'selected':''}>Aberta</option>
                      <option value="andamento" ${os.status==='andamento'?'selected':''}>Em andamento</option>
                      <option value="concluida" ${os.status==='concluida'?'selected':''}>Concluída</option>
                      <option value="cancelada" ${os.status==='cancelada'?'selected':''}>Cancelada</option>
                    </select>`
-                : `<span class="status-badge ${statusCls[os.status]||'status-pendente'}">${statusNome[os.status]||os.status}</span>`;
-            return `
+                : html`<span class="status-badge ${statusCls[os.status]||'status-pendente'}">${statusNome[os.status]||os.status}</span>`;
+            return html`
             <tr>
                 <td><span style="font-family:monospace;font-weight:700;color:var(--accent)">#${os.numero}</span></td>
                 <td>

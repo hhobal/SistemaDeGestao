@@ -26,7 +26,7 @@ function toast(msg, tipo) {
   tipo = tipo || 'ok';
   const icones = { ok:'fa-circle-check', erro:'fa-circle-exclamation', info:'fa-circle-info' };
   const el = document.getElementById('toast');
-  el.innerHTML = `<i class="fa-solid ${icones[tipo]}"></i> ${msg}`;
+  el.innerHTML = html`<i class="fa-solid ${icones[tipo]}"></i> ${msg}`;
   el.className = `toast toast-${tipo} show`;
   clearTimeout(el._t);
   el._t = setTimeout(() => el.classList.remove('show'), 2800);

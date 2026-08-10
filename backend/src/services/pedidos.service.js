@@ -9,9 +9,17 @@
 // na auditoria do front-end. A receita só é marcada como "paga"
 // quando o pedido é efetivamente entregue; o custo (CMV) é lançado
 // como pago de imediato, pois a mercadoria já saiu do estoque.
+const { Prisma } = require('@prisma/client');
 const prisma = require('../lib/prisma');
 const ApiError = require('../utils/ApiError');
 const { registrarLog } = require('./log.service');
+
+// Valores monetários são Decimal no banco. As contas precisam usar os
+// métodos do Decimal (.mul/.add) e não os operadores * e +: estes
+// convertem para número de ponto flutuante, onde 0,1 + 0,2 não dá 0,3.
+// O erro é invisível num pedido isolado e vira divergência de centavos
+// quando o relatório soma milhares de linhas.
+const Dec = Prisma.Decimal;
 
 const STATUS_VALIDOS = ['pendente', 'processando', 'enviado', 'entregue', 'cancelado'];
 const STATUS_FINAL = ['entregue', 'cancelado'];
@@ -37,11 +45,11 @@ async function criarPedido({ clienteId, itensCarrinho, enderecoEntrega, pagament
     const cliente = await tx.cliente.findUnique({ where: { id: clienteId } });
     if (!cliente) throw ApiError.naoEncontrado('Cliente não encontrado.');
 
-    let total = 0;
+    let total = new Dec(0);
     const itensParaCriar = [];
     const atualizacoesEstoque = [];
     const movimentosEstoque = [];
-    let custoTotal = 0;
+    let custoTotal = new Dec(0);
 
     for (const itemCarrinho of itensCarrinho) {
       const produto = await tx.produto.findUnique({ where: { id: itemCarrinho.produtoId } });
@@ -54,9 +62,9 @@ async function criarPedido({ clienteId, itensCarrinho, enderecoEntrega, pagament
 
       // Preço e custo vêm sempre do banco — nunca confiar no valor enviado
       // pelo navegador, que poderia ser manipulado no checkout.
-      const subtotal = produto.preco * itemCarrinho.quantidade;
-      total += subtotal;
-      custoTotal += produto.custo * itemCarrinho.quantidade;
+      const subtotal = new Dec(produto.preco).mul(itemCarrinho.quantidade);
+      total = total.add(subtotal);
+      custoTotal = custoTotal.add(new Dec(produto.custo).mul(itemCarrinho.quantidade));
 
       itensParaCriar.push({
         produtoId: produto.id,
@@ -110,7 +118,7 @@ async function criarPedido({ clienteId, itensCarrinho, enderecoEntrega, pagament
         pedidoId: pedido.id
       }
     });
-    if (custoTotal > 0) {
+    if (custoTotal.gt(0)) {
       await tx.lancamento.create({
         data: {
           descricao: `CMV — Pedido #${numero}`,

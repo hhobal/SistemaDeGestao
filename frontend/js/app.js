@@ -243,10 +243,10 @@ async function abrirModalOS(id = null) {
     selC.innerHTML = '<option value="">Selecione o cliente...</option>';
     selR.innerHTML = '<option value="">Selecione o responsável...</option>';
     listaClientes.forEach(c => {
-        selC.innerHTML += `<option value="${c.id}">${c.nome}</option>`;
+        selC.innerHTML += html`<option value="${c.id}">${c.nome}</option>`;
     });
     listaUsuarios.filter(u => u.perfil !== 'Visitante').forEach(u => {
-        selR.innerHTML += `<option value="${u.id}">${u.nome}</option>`;
+        selR.innerHTML += html`<option value="${u.id}">${u.nome}</option>`;
     });
 
     const modal = document.getElementById('modalOS');
@@ -321,7 +321,7 @@ async function abrirModalTarefa(id = null) {
         const listaUsuarios = await carregarUsuariosDoBanco();
         selR.innerHTML = '<option value="">Sem responsável</option>';
         listaUsuarios.forEach(u => {
-            selR.innerHTML += `<option value="${u.id}">${u.nome}</option>`;
+            selR.innerHTML += html`<option value="${u.id}">${u.nome}</option>`;
         });
     }
 
@@ -451,7 +451,7 @@ function executarBuscaGlobal() {
         return;
     }
 
-    container.innerHTML = resultados.map(r => `
+    container.innerHTML = resultados.map(r => html`
         <div class="busca-resultado" onclick="fecharBuscaGlobal(); mostrarSecao('${r.secao}')">
             <div class="busca-resultado-icon" style="color:${r.cor}"><i class="fa-solid ${r.icone}"></i></div>
             <div class="busca-resultado-info">
@@ -496,7 +496,7 @@ async function renderizarAlertas() {
         if (alertas.length === 0) {
             lista.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:13px"><i class="fa-solid fa-check-circle" style="color:var(--success);display:block;font-size:24px;margin-bottom:8px"></i>Nenhum alerta no momento</div>';
         } else {
-            lista.innerHTML = alertas.map(a => `
+            lista.innerHTML = alertas.map(a => html`
                 <div class="notif-item" onclick="fecharNotif(); mostrarSecao('${a.secao}')">
                     <i class="fa-solid ${a.icone}" style="color:${a.cor}"></i>
                     <span>${a.texto}</span>
@@ -532,7 +532,7 @@ document.addEventListener('click', e => {
 function mostrarNotificacao(mensagem, tipo = 'sucesso') {
     const n = document.createElement('div');
     n.className = `toast toast-${tipo}`;
-    n.innerHTML = `<i class="fa-solid fa-${tipo === 'erro' ? 'circle-xmark' : 'circle-check'}"></i> ${mensagem}`;
+    n.innerHTML = html`<i class="fa-solid fa-${tipo === 'erro' ? 'circle-xmark' : 'circle-check'}"></i> ${mensagem}`;
     document.body.appendChild(n);
     requestAnimationFrame(() => n.classList.add('toast-show'));
     setTimeout(() => {
@@ -549,32 +549,35 @@ function renderizarPaginacao(containerId, totalItens, itensPorPagina, paginaAtua
     const totalPaginas = Math.ceil(totalItens / itensPorPagina);
     if (totalPaginas <= 1) { container.innerHTML = ''; return; }
 
-    let html = '';
-    html += `<button class="pag-btn" onclick="${onMudar}(${paginaAtual - 1})" ${paginaAtual <= 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-left"></i></button>`;
+    // Variável renomeada de `html` para `marcacao`: o nome antigo passou a
+    // sombrear a função `html` de escape (js/seguranca.js), fazendo os
+    // templates abaixo estourarem "html is not a function".
+    let marcacao = '';
+    marcacao += html`<button class="pag-btn" onclick="${onMudar}(${paginaAtual - 1})" ${paginaAtual <= 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-left"></i></button>`;
 
     for (let i = 1; i <= totalPaginas; i++) {
         if (totalPaginas > 7) {
             if (i !== 1 && i !== totalPaginas && Math.abs(i - paginaAtual) > 2) {
-                if (i === 2 || i === totalPaginas - 1) { html += `<span class="pag-ellipsis">…</span>`; }
+                if (i === 2 || i === totalPaginas - 1) { marcacao += html`<span class="pag-ellipsis">…</span>`; }
                 continue;
             }
         }
-        html += `<button class="pag-btn ${i === paginaAtual ? 'pag-ativa' : ''}" onclick="${onMudar}(${i})">${i}</button>`;
+        marcacao += html`<button class="pag-btn ${i === paginaAtual ? 'pag-ativa' : ''}" onclick="${onMudar}(${i})">${i}</button>`;
     }
 
-    html += `<button class="pag-btn" onclick="${onMudar}(${paginaAtual + 1})" ${paginaAtual >= totalPaginas ? 'disabled' : ''}><i class="fa-solid fa-chevron-right"></i></button>`;
-    container.innerHTML = html;
+    marcacao += html`<button class="pag-btn" onclick="${onMudar}(${paginaAtual + 1})" ${paginaAtual >= totalPaginas ? 'disabled' : ''}><i class="fa-solid fa-chevron-right"></i></button>`;
+    container.innerHTML = marcacao;
 }
 
 // ─── EMPTY STATE ───────────────────────
 
 function emptyState(mensagem, icone = 'fa-inbox', acao = '') {
-    return `
+    return html`
     <tr><td colspan="99" style="text-align:center;padding:40px 20px">
         <div style="color:var(--text-muted)">
             <i class="fa-solid ${icone}" style="font-size:32px;margin-bottom:12px;display:block;opacity:.4"></i>
             <p style="font-size:13px;margin:0 0 8px">${mensagem}</p>
-            ${acao ? `<p style="font-size:12px;color:var(--accent)">${acao}</p>` : ''}
+            ${acao ? html`<p style="font-size:12px;color:var(--accent)">${acao}</p>` : ''}
         </div>
     </td></tr>`;
 }

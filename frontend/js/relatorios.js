@@ -83,10 +83,10 @@ function _listaEstoqueCritico(produtos) {
     const el = document.getElementById('relEstoqueCritico');
     if (!el) return;
     if (produtos.length === 0) {
-        el.innerHTML = `<div style="color:var(--text-muted);font-size:13px;padding:12px">Nenhum produto em estado crítico. 🎉</div>`;
+        el.innerHTML = html`<div style="color:var(--text-muted);font-size:13px;padding:12px">Nenhum produto em estado crítico. 🎉</div>`;
         return;
     }
-    el.innerHTML = produtos.map(p => `
+    el.innerHTML = produtos.map(p => html`
         <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border);font-size:13px">
             <span>${p.nome}</span>
             <span style="color:var(--danger);font-weight:700">${p.estoque} / mín. ${p.estoqueMin}</span>
@@ -99,10 +99,10 @@ function _listaTop5Clientes(clientes) {
     if (!el) return;
     const fmt = v => Number(v||0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
     if (clientes.length === 0) {
-        el.innerHTML = `<div style="color:var(--text-muted);font-size:13px;padding:12px">Sem dados suficientes ainda.</div>`;
+        el.innerHTML = html`<div style="color:var(--text-muted);font-size:13px;padding:12px">Sem dados suficientes ainda.</div>`;
         return;
     }
-    el.innerHTML = clientes.map((c, i) => `
+    el.innerHTML = clientes.map((c, i) => html`
         <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border);font-size:13px">
             <span><strong style="color:var(--accent)">#${i+1}</strong> ${c.nome} <span style="color:var(--text-muted);font-size:11px">(${c.compras} compra${c.compras===1?'':'s'})</span></span>
             <span style="color:var(--success);font-weight:700">${fmt(c.total)}</span>
