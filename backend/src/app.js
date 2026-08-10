@@ -22,9 +22,40 @@ if (env.ambiente === 'development') {
   app.use(morgan('dev'));
 }
 
-// ─── ROTA DE SAÚDE (útil para checar se o servidor está de pé) ──
-app.get('/api/saude', (req, res) => {
-  res.json({ ok: true, ambiente: env.ambiente, horario: new Date().toISOString() });
+// ─── ROTA DE SAÚDE ──────────────────────────────────────
+// Consulta o banco de propósito, por dois motivos:
+//   1. Um health check que não toca no banco não prova quase nada —
+//      a API pode estar "de pé" e incapaz de responder qualquer rota útil.
+//   2. No plano gratuito, o Supabase pausa o projeto após dias sem
+//      atividade. Como este endpoint é o alvo do ping periódico que
+//      impede o Render de hibernar, fazê-lo consultar o banco mantém
+//      os dois acordados com uma requisição só.
+//
+// Responde 200 mesmo se o banco falhar, sinalizando o problema no corpo.
+// Devolver 5xx faria o Render considerar a instância defeituosa e
+// reiniciá-la a cada oscilação do banco — o processo Express, esse,
+// está de fato no ar.
+app.get('/api/saude', async (req, res) => {
+  const prisma = require('./lib/prisma');
+  let banco = 'ok';
+  let latenciaBanco = null;
+
+  const inicio = Date.now();
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    latenciaBanco = Date.now() - inicio;
+  } catch (erro) {
+    banco = 'erro';
+    console.error('[SAUDE] Banco inacessível:', erro.message);
+  }
+
+  res.json({
+    ok: banco === 'ok',
+    ambiente: env.ambiente,
+    banco,
+    latenciaBanco,
+    horario: new Date().toISOString()
+  });
 });
 
 // ─── ROTAS — PAINEL ADMINISTRATIVO (EQUIPE INTERNA) ─────
