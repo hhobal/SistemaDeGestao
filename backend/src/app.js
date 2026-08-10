@@ -11,14 +11,18 @@ const { errorHandler, rotaNaoEncontrada } = require('./middleware/errorHandler')
 
 const app = express();
 
-// Em produção a API roda atrás do proxy do Render. Sem isto, req.ip
-// devolve o endereço do proxy para todo mundo: o limitador de tentativas
-// de login contaria todos os usuários no mesmo balde e 10 erros de senha
-// de um visitante bloqueariam o sistema inteiro. O valor 1 confia apenas
-// no proxy imediatamente à frente — confiar em toda a cadeia permitiria
-// forjar o IP pelo cabeçalho X-Forwarded-For e escapar do limite.
+// Em produção a requisição atravessa Cloudflare e o balanceador interno
+// do Render antes de chegar aqui. Confiamos apenas nos endereços de rede
+// privada (o salto do Render, 10.x) em vez de um número fixo de saltos:
+// o tamanho da cadeia é detalhe da infraestrutura e pode mudar sem aviso.
+//
+// `true` seria mais simples e mais errado — aceitaria qualquer
+// X-Forwarded-For enviado pelo visitante, deixando-o forjar o próprio IP.
+//
+// A identificação do cliente para o limite de tentativas não depende
+// disto: usa CF-Connecting-IP (ver middleware/rateLimit.js).
 if (env.ambiente === 'production') {
-  app.set('trust proxy', 1);
+  app.set('trust proxy', ['loopback', 'uniquelocal']);
 }
 
 // ─── MIDDLEWARES GLOBAIS ────────────────────────────────
@@ -59,30 +63,13 @@ app.get('/api/saude', async (req, res) => {
     console.error('[SAUDE] Banco inacessível:', erro.message);
   }
 
-  const corpo = {
+  res.json({
     ok: banco === 'ok',
     ambiente: env.ambiente,
     banco,
     latenciaBanco,
     horario: new Date().toISOString()
-  };
-
-  // TEMPORÁRIO: diagnóstico da cadeia de proxy, para descobrir de qual
-  // cabeçalho extrair o IP real do cliente no limitador de tentativas.
-  // Mostra apenas o endereço de quem fez a chamada — nada de terceiros.
-  if (req.query.debug === 'rede') {
-    corpo.rede = {
-      ip: req.ip,
-      ips: req.ips,
-      xForwardedFor: req.headers['x-forwarded-for'] || null,
-      cfConnectingIp: req.headers['cf-connecting-ip'] || null,
-      trueClientIp: req.headers['true-client-ip'] || null,
-      xRealIp: req.headers['x-real-ip'] || null,
-      trustProxy: req.app.get('trust proxy')
-    };
-  }
-
-  res.json(corpo);
+  });
 });
 
 // ─── ROTAS — PAINEL ADMINISTRATIVO (EQUIPE INTERNA) ─────
