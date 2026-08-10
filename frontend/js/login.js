@@ -54,10 +54,10 @@ function logout() {
 // ─── VERIFICAR SESSÃO ──────────────────
 
 function verificarSessao() {
-    const pagina = window.location.pathname.split('/').pop();
+    const pagina = paginaAtual();
     const sessao = carregarSessao();
 
-    if (pagina === 'login.html') {
+    if (pagina === 'login') {
         if (sessao) window.location.href = 'index.html';
         return;
     }

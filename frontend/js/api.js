@@ -21,6 +21,19 @@ const STORAGE_KEYS = {
 // Ajuste aqui se o backend estiver rodando em outro host/porta.
 const API_BASE_URL = window.__API_BASE_URL__ || 'http://localhost:3001/api';
 
+// ─── PÁGINA ATUAL ────────────────────────────────────────
+// Devolve o nome da página sem a extensão: 'login', 'index', 'loja'...
+//
+// Comparar direto com 'login.html' quebraria dependendo de como o host
+// serve os arquivos: com "clean URLs" ativado (Vercel, Netlify), o
+// caminho vira '/login' e a comparação falha — a tela de login passaria
+// a se redirecionar para si mesma, em loop infinito. Normalizar aqui
+// deixa o resto do código indiferente a essa configuração.
+function paginaAtual() {
+    const ultimo = window.location.pathname.split('/').pop() || 'index';
+    return ultimo.replace(/\.html$/, '');
+}
+
 // ─── HELPERS DE STORAGE (sessão e tema apenas) ──────────
 
 function _get(key)      { try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; } }
@@ -64,11 +77,11 @@ async function apiRequest(path, options = {}) {
         throw new Error('Não foi possível conectar ao servidor. Verifique se o backend está rodando.');
     }
 
-    // Sessão expirada/inválida: desloga automaticamente (exceto na tela de login).
+    // Sessão expirada/inválida: desloga automaticamente (exceto na tela de
+    // login — senão a própria tela de login entraria em loop de redirect).
     if (resposta.status === 401) {
         limparSessao();
-        const pagina = window.location.pathname.split('/').pop();
-        if (pagina !== 'login.html') {
+        if (paginaAtual() !== 'login') {
             window.location.href = 'login.html';
         }
     }
