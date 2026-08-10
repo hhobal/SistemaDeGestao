@@ -1,0 +1,30 @@
+# ======================================
+# BANCO DE TESTES LOCAL
+# ======================================
+# Sobe um PostgreSQL isolado para a suíte de testes:
+#
+#   docker compose up -d
+#   npm test
+#
+# Porta 5434 de propósito: 5432 costuma estar ocupada por um PostgreSQL
+# instalado na máquina e 5433 pelo Docker. Assim nada conflita.
+#
+# Este arquivo NÃO descreve a produção — lá o banco é o Supabase.
+
+services:
+  postgres-teste:
+    image: postgres:16-alpine
+    container_name: gestaopro-test-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: gestaopro_test
+    ports:
+      - "5434:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    # Sem volume: o banco de teste é descartável e recriado a cada
+    # execução da suíte (`prisma db push --force-reset`).

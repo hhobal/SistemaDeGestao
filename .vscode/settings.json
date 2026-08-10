@@ -1,0 +1,18 @@
+{
+  "liveServer.settings.port": 5500,
+  "liveServer.settings.root": "/frontend",
+  "liveServer.settings.CustomBrowser": "chrome",
+  "files.eol": "\n",
+  "files.encoding": "utf8",
+  "editor.tabSize": 2,
+  "[javascript]": {
+    "editor.tabSize": 4
+  },
+  "[prisma]": {
+    "editor.tabSize": 2
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/backend/prisma/dev.db": true
+  }
+}

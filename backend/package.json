@@ -12,7 +12,10 @@
     "prisma:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
     "seed": "node prisma/seed.js",
-    "migrar-localstorage": "node scripts/migrar-localstorage.js"
+    "migrar-localstorage": "node scripts/migrar-localstorage.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@prisma/client": "^5.20.0",
@@ -26,8 +29,11 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.10",
     "nodemon": "^3.1.4",
-    "prisma": "^5.20.0"
+    "prisma": "^5.20.0",
+    "supertest": "^7.2.2",
+    "vitest": "^4.1.10"
   },
   "engines": {
     "node": ">=18"

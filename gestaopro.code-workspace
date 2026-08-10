@@ -1,0 +1,19 @@
+{
+  "folders": [
+    {
+      "name": "GestãoPro",
+      "path": "."
+    }
+  ],
+  "settings": {
+    "liveServer.settings.port": 5500,
+    "liveServer.settings.root": "/frontend"
+  },
+  "extensions": {
+    "recommendations": [
+      "Prisma.prisma",
+      "ritwickdey.LiveServer",
+      "dbaeumer.vscode-eslint"
+    ]
+  }
+}

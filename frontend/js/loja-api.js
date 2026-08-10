@@ -7,12 +7,14 @@
 // camada guarda a sessão em chaves de localStorage próprias
 // ('loja_token' / 'loja_cliente'), nunca reaproveitando 'erp_sessao'.
 
-const LOJA_API_BASE_URL = window.__API_BASE_URL__ || 'http://localhost:3000/api';
+const LOJA_API_BASE_URL = window.__API_BASE_URL__ || 'http://localhost:3001/api';
 
 const LOJA_STORAGE_KEYS = {
     TOKEN:   'loja_token',
     CLIENTE: 'loja_cliente',
-    CARRINHO: 'loja_carrinho' // o carrinho em si é local até o checkout; não há "carrinho" no backend
+    CARRINHO: 'loja_carrinho',   // o carrinho em si é local até o checkout; não há "carrinho" no backend
+    FAVORITOS: 'loja_favoritos', // lista de IDs favoritados — recurso 100% local, não existe modelo no backend
+    RECENTES:  'loja_recentes'   // últimos produtos visualizados (também local)
 };
 
 function lojaGet(key)      { try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; } }
@@ -42,6 +44,31 @@ function lojaClienteLogado() {
 function lojaCarregarCarrinho()    { return lojaGet(LOJA_STORAGE_KEYS.CARRINHO) || []; }
 function lojaSalvarCarrinho(itens) { lojaSet(LOJA_STORAGE_KEYS.CARRINHO, itens); }
 function lojaLimparCarrinho()      { localStorage.removeItem(LOJA_STORAGE_KEYS.CARRINHO); }
+
+// ─── FAVORITOS (lista de desejos — local, por navegador) ──────────
+
+function lojaCarregarFavoritos() { return lojaGet(LOJA_STORAGE_KEYS.FAVORITOS) || []; }
+
+function lojaAlternarFavorito(id) {
+    let favoritos = lojaCarregarFavoritos();
+    const existe = favoritos.includes(id);
+    favoritos = existe ? favoritos.filter(f => f !== id) : [...favoritos, id];
+    lojaSet(LOJA_STORAGE_KEYS.FAVORITOS, favoritos);
+    return !existe; // true = acabou de favoritar
+}
+
+function lojaEhFavorito(id) { return lojaCarregarFavoritos().includes(id); }
+
+// ─── VISTOS RECENTEMENTE (local, por navegador) ────────────────────
+
+function lojaCarregarRecentes() { return lojaGet(LOJA_STORAGE_KEYS.RECENTES) || []; }
+
+function lojaRegistrarRecente(id) {
+    let recentes = lojaCarregarRecentes().filter(r => r !== id);
+    recentes.unshift(id);
+    recentes = recentes.slice(0, 10);
+    lojaSet(LOJA_STORAGE_KEYS.RECENTES, recentes);
+}
 
 // ─── CLIENTE HTTP ───────────────────────
 

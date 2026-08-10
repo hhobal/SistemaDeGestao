@@ -62,25 +62,30 @@ com algo na tela.
 npm run dev
 ```
 
-A API sobe em `http://localhost:3000`. Teste rápido:
+A API sobe em `http://localhost:3001`. Teste rápido:
 
 ```bash
-curl http://localhost:3000/api/saude
+curl http://localhost:3001/api/saude
 ```
 
 ### Importante: como abrir o front-end
 
-O front-end (pasta raiz do projeto: `index.html`, `loja.html` etc.)
+O front-end (pasta `frontend/`: `index.html`, `loja.html` etc.)
 precisa ser **servido por um servidor HTTP local**, não aberto
 diretamente com duplo clique (`file://`) — navegadores bloqueiam esse
-tipo de página de fazer requisições `fetch` para `localhost:3000`.
+tipo de página de fazer requisições `fetch` para `localhost:3001`.
 
-Formas simples de servir a pasta raiz do projeto:
+Formas simples de servir a pasta `frontend/`:
 
 ```bash
-# Opção 1: extensão "Live Server" do VS Code (botão "Go Live")
-# Opção 2: Python, se já tiver instalado
-cd ..   # volte para a raiz do projeto (onde está o index.html)
+# Opção 1: a partir da raiz do projeto
+npm run dev:front
+
+# Opção 2: extensão "Live Server" do VS Code (botão "Go Live").
+#          O .vscode/settings.json já aponta a raiz para /frontend.
+
+# Opção 3: Python, se já tiver instalado
+cd ../frontend
 python3 -m http.server 5500
 # depois abra http://localhost:5500/login.html
 ```
@@ -227,5 +232,5 @@ CRUD simples — ver `src/routes/*.routes.js`.
   dev`), e usar um gerenciador de processos como `pm2` para manter a
   API no ar. Lembre-se também de atualizar `CORS_ORIGINS` no `.env`
   para o endereço real onde o front-end vai rodar, e
-  `window.__API_BASE_URL__` em `js/config.js` no front-end para a URL
+  a constante `API_PRODUCAO` em `frontend/js/config.js` para a URL
   pública da API.

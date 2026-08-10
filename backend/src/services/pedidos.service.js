@@ -132,7 +132,7 @@ async function alterarStatusPedido(pedidoId, novoStatus, nomeUsuario) {
     throw ApiError.badRequest(`Status inválido. Use um de: ${STATUS_VALIDOS.join(', ')}.`);
   }
 
-  return prisma.$transaction(async (tx) => {
+  const { atualizado, statusAnterior, numero } = await prisma.$transaction(async (tx) => {
     const pedido = await tx.pedido.findUnique({ where: { id: pedidoId }, include: { itens: true } });
     if (!pedido) throw ApiError.naoEncontrado('Pedido não encontrado.');
 
@@ -178,15 +178,22 @@ async function alterarStatusPedido(pedidoId, novoStatus, nomeUsuario) {
       include: { itens: true, cliente: true }
     });
 
-    await registrarLog({
-      usuario: nomeUsuario,
-      acao: 'Status pedido',
-      modulo: 'Pedidos',
-      detalhe: `#${pedido.numero} ${statusAnterior} → ${novoStatus}`
-    });
-
-    return atualizado;
+    return { atualizado, statusAnterior, numero: pedido.numero };
   });
+
+  // O log é gravado FORA da transação, de propósito. Dentro dela,
+  // registrarLog usaria o client global (outra conexão) enquanto a
+  // transação segura o lock de escrita — as duas ficariam se esperando
+  // até o timeout de 5s do Prisma. Além disso, auditoria só deve
+  // registrar o que foi de fato confirmado no banco.
+  await registrarLog({
+    usuario: nomeUsuario,
+    acao: 'Status pedido',
+    modulo: 'Pedidos',
+    detalhe: `#${numero} ${statusAnterior} → ${novoStatus}`
+  });
+
+  return atualizado;
 }
 
 module.exports = {

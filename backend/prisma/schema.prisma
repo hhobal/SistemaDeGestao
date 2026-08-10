@@ -1,22 +1,30 @@
 // ======================================
 // GESTÃOPRO — SCHEMA DO BANCO DE DADOS
 // ======================================
-// Para desenvolvimento: provider = "sqlite" (arquivo único, zero config)
-// Para produção no servidor da empresa: troque para "postgresql"
-// e ajuste DATABASE_URL no .env — nenhuma linha abaixo precisa mudar.
+// PostgreSQL em todos os ambientes (Supabase em produção, Postgres local
+// nos testes). Manter o mesmo banco em dev e produção evita a classe de
+// bug que só aparece depois do deploy.
+//
+// Duas URLs porque o Supabase expõe o banco por dois caminhos:
+//   DATABASE_URL → pooler em modo transaction (porta 6543), usado pela
+//     aplicação. Suporta muitas conexões curtas, como as do Render.
+//   DIRECT_URL   → pooler em modo session (porta 5432), usado pelo
+//     `prisma migrate`. Migrations precisam de uma sessão real, que o
+//     modo transaction não oferece.
 //
 // Observação sobre enums: propositalmente usamos String (não enum do
-// Prisma) em campos como status/tipo/perfil. SQLite não suporta enum
-// nativo, e assim o schema funciona idêntico nos dois bancos. A
-// validação dos valores permitidos é feita na camada da API (zod).
+// Prisma) em campos como status/tipo/perfil. A validação dos valores
+// permitidos é feita na camada da API, com zod — assim adicionar um
+// status novo não exige migration.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ─── USUÁRIOS DO SISTEMA (equipe interna) ──────────────

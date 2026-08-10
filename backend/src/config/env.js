@@ -12,7 +12,7 @@ function obrigatoria(nome, valorPadrao = undefined) {
 }
 
 const env = {
-  porta: parseInt(process.env.PORT || '3000', 10),
+  porta: parseInt(process.env.PORT || '3001', 10),
   ambiente: process.env.NODE_ENV || 'development',
 
   jwtSecret: obrigatoria('JWT_SECRET'),

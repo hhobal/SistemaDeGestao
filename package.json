@@ -1,0 +1,19 @@
+{
+  "name": "gestaopro",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sistema de gestão empresarial (ERP) com loja virtual integrada — painel administrativo, catálogo público e API REST.",
+  "scripts": {
+    "dev": "npm run dev --prefix backend",
+    "dev:front": "npx --yes serve frontend -l 5500",
+    "start": "npm run start --prefix backend",
+    "setup": "npm install --prefix backend && npm run prisma:generate --prefix backend",
+    "seed": "npm run seed --prefix backend",
+    "db:migrate": "npm run prisma:migrate --prefix backend",
+    "db:studio": "npm run prisma:studio --prefix backend",
+    "test": "npm test --prefix backend"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

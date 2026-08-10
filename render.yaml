@@ -1,0 +1,40 @@
+# ======================================
+# RENDER — INFRAESTRUTURA COMO CÓDIGO
+# ======================================
+# Com este arquivo o serviço é criado por "New > Blueprint" apontando
+# para o repositório, em vez de preencher o formulário na mão.
+#
+# O banco NÃO é declarado aqui: usamos o PostgreSQL do Supabase, que
+# vive fora do Render. As duas URLs entram como variáveis de ambiente.
+
+services:
+  - type: web
+    name: gestaopro-api
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: backend
+
+    buildCommand: npm ci && npx prisma generate
+    # migrate deploy (e não migrate dev) aplica as migrations pendentes
+    # sem nunca recriar o banco — seguro de rodar a cada deploy.
+    startCommand: npx prisma migrate deploy && npm start
+
+    healthCheckPath: /api/saude
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      # sync: false = o Render pergunta o valor na criação e o guarda
+      # criptografado. Nenhum segredo fica versionado neste arquivo.
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_LOJA_SECRET
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false

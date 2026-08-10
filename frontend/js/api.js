@@ -19,7 +19,7 @@ const STORAGE_KEYS = {
 };
 
 // Ajuste aqui se o backend estiver rodando em outro host/porta.
-const API_BASE_URL = window.__API_BASE_URL__ || 'http://localhost:3000/api';
+const API_BASE_URL = window.__API_BASE_URL__ || 'http://localhost:3001/api';
 
 // ─── HELPERS DE STORAGE (sessão e tema apenas) ──────────
 

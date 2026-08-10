@@ -27,7 +27,7 @@ async function alterarStatusOS(osId, novoStatus, nomeUsuario) {
     throw ApiError.badRequest(`Status inválido. Use um de: ${STATUS_VALIDOS.join(', ')}.`);
   }
 
-  return prisma.$transaction(async (tx) => {
+  const { atualizada, statusAnterior, numero } = await prisma.$transaction(async (tx) => {
     const os = await tx.ordemServico.findUnique({ where: { id: osId } });
     if (!os) throw ApiError.naoEncontrado('Ordem de serviço não encontrada.');
 
@@ -62,15 +62,20 @@ async function alterarStatusOS(osId, novoStatus, nomeUsuario) {
       include: { cliente: true, responsavel: true }
     });
 
-    await registrarLog({
-      usuario: nomeUsuario,
-      acao: 'Status O.S.',
-      modulo: 'Ordens de Serviço',
-      detalhe: `#${os.numero} ${os.status} → ${novoStatus}`
-    });
-
-    return atualizada;
+    return { atualizada, statusAnterior: os.status, numero: os.numero };
   });
+
+  // Fora da transação pelo mesmo motivo explicado em pedidos.service.js:
+  // registrarLog usa o client global e travaria esperando o lock que a
+  // própria transação está segurando.
+  await registrarLog({
+    usuario: nomeUsuario,
+    acao: 'Status O.S.',
+    modulo: 'Ordens de Serviço',
+    detalhe: `#${numero} ${statusAnterior} → ${novoStatus}`
+  });
+
+  return atualizada;
 }
 
 module.exports = { STATUS_VALIDOS, criarOS, alterarStatusOS };
