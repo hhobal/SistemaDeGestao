@@ -23,10 +23,10 @@
         host.startsWith('192.168.') || // acesso pela rede local
         host.startsWith('10.');
 
-    // ─── AJUSTE AQUI AO PUBLICAR ────────────────────────────
-    // Troque pela URL pública do backend depois de fazer o deploy
-    // (ex.: 'https://gestaopro-api.onrender.com/api').
-    const API_PRODUCAO = 'https://gestaopro-api.onrender.com/api';
+    // API publicada no Render. O subdomínio tem o sufixo "-wthk" porque
+    // "gestaopro-api" já estava em uso — nomes .onrender.com são únicos
+    // globalmente. Se o serviço for recriado, confira a URL no painel.
+    const API_PRODUCAO = 'https://gestaopro-api-wthk.onrender.com/api';
 
     const API_LOCAL = 'http://localhost:3001/api';
 
