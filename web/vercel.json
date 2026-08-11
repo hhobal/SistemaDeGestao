@@ -1,0 +1,39 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+
+  "//": [
+    "As rotas (/clientes, /pedidos...) existem só no navegador: quem as",
+    "resolve é o React Router. Sem o rewrite abaixo, abrir ou recarregar",
+    "qualquer endereço que não a raiz devolveria 404, porque não há",
+    "arquivo com esse nome no servidor.",
+    "",
+    "O rewrite não pode capturar /assets: esses são arquivos reais, e",
+    "devolver o HTML no lugar do JS quebraria a aplicação inteira."
+  ],
+  "rewrites": [
+    { "source": "/((?!assets/).*)", "destination": "/index.html" }
+  ],
+
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+      ]
+    },
+    {
+      "//": "O Vite põe hash no nome dos arquivos, então o conteúdo nunca muda sem o nome mudar junto.",
+      "source": "/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "//": "O HTML precisa ser sempre revalidado, senão o navegador serve uma versão antiga que aponta para bundles que já não existem.",
+      "source": "/index.html",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
+    }
+  ]
+}

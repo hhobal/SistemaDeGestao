@@ -7,6 +7,7 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 
 const env = require('./config/env');
+const { criarVerificadorDeOrigem } = require('./config/cors');
 const { errorHandler, rotaNaoEncontrada } = require('./middleware/errorHandler');
 
 const app = express();
@@ -27,8 +28,11 @@ if (env.ambiente === 'production') {
 
 // ─── MIDDLEWARES GLOBAIS ────────────────────────────────
 app.use(helmet());
+// CORS_ORIGINS aceita curinga (ver config/cors.js): a Vercel cria um
+// domínio novo a cada deploy de preview, e listá-los um a um seria
+// impossível.
 app.use(cors({
-  origin: env.corsOrigins.length > 0 ? env.corsOrigins : true,
+  origin: criarVerificadorDeOrigem(env.corsOrigins),
   credentials: true
 }));
 app.use(express.json({ limit: '2mb' }));
