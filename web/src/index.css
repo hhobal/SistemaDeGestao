@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+/* ======================================
+   TOKENS DE DESIGN
+   ======================================
+   As cores vêm da interface atual (frontend/css/style.css) de
+   propósito: a migração troca a tecnologia, não a identidade visual.
+   Assim dá para comparar as duas versões lado a lado e saber que a
+   diferença é de arquitetura, não de gosto.
+
+   No Tailwind 4 a configuração é feita aqui, em CSS, e não mais num
+   tailwind.config.js. Cada token vira utilitário automaticamente:
+   --color-superficie gera bg-superficie, text-superficie, etc. */
+
+@theme {
+  --color-fundo: #0d0f12;
+  --color-superficie: #161a20;
+  --color-cartao: #1e2430;
+  --color-realce: #252d3a;
+
+  --color-texto: #e8eaf0;
+  --color-texto-suave: #8b93a7;
+  --color-texto-fraco: #555e70;
+
+  --color-marca: #4f8ef7;
+  --color-marca-escura: #3a7aee;
+
+  --color-ok: #34d399;
+  --color-erro: #f87171;
+  --color-aviso: #fbbf24;
+
+  --color-borda: #2a3040;
+  --color-borda-clara: #323c50;
+
+  --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+
+  --radius-card: 10px;
+}
+
+@layer base {
+  body {
+    @apply bg-fundo text-texto font-sans antialiased;
+    font-size: 14px;
+  }
+
+  /* A barra de rolagem padrão do Windows destoa do tema escuro. */
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-thumb { background: var(--color-borda); border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--color-borda-clara); }
+}
