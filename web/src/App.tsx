@@ -5,6 +5,7 @@ import { RotaProtegida } from './auth/RotaProtegida';
 import { Shell } from './layout/Shell';
 import { Login } from './paginas/Login';
 import { Dashboard } from './paginas/Dashboard';
+import { Clientes } from './paginas/Clientes';
 import { ErroApi } from './lib/api';
 
 const clienteQuery = new QueryClient({
@@ -34,7 +35,7 @@ export default function App() {
             <Route element={<RotaProtegida />}>
               <Route element={<Shell />}>
                 <Route index element={<Dashboard />} />
-                <Route path="clientes" element={<EmBreve titulo="Clientes" />} />
+                <Route path="clientes" element={<Clientes />} />
                 <Route path="produtos" element={<EmBreve titulo="Produtos" />} />
                 <Route path="pedidos" element={<EmBreve titulo="Pedidos" />} />
                 <Route path="os" element={<EmBreve titulo="Ordens de Serviço" />} />
