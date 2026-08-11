@@ -532,9 +532,82 @@ body.login-page { display: flex; align-items: center; justify-content: center; m
 
 /* ─── RESPONSIVO ──────────────────────── */
 
+/* Botão de menu e overlay: escondidos no desktop, onde a sidebar é fixa. */
+.btn-menu-mobile { display: none; }
+.overlay-menu { display: none; }
+
 @media (max-width: 768px) {
-    .sidebar { position: fixed; transform: translateX(-100%); transition: transform var(--transition); }
+    .sidebar {
+        position: fixed;
+        top: 0; left: 0; bottom: 0;
+        z-index: 200;
+        transform: translateX(-100%);
+        transition: transform var(--transition);
+    }
     .sidebar.mobile-open { transform: translateX(0); }
+
+    /* O botão de recolher é útil só no desktop; no celular a sidebar
+       abre e fecha inteira. */
+    .toggle-sidebar { display: none; }
+
+    .btn-menu-mobile {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px; height: 40px;
+        flex-shrink: 0;
+        margin-right: 12px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        color: var(--text);
+        font-size: 17px;
+        cursor: pointer;
+    }
+    .btn-menu-mobile:active { background: var(--bg-hover); }
+
+    .overlay-menu {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 150;
+        background: rgba(0, 0, 0, .55);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity var(--transition);
+    }
+    .overlay-menu.aberto { opacity: 1; pointer-events: auto; }
+
+    /* A sidebar vira `position: fixed` e sai do fluxo flex, então o
+       conteúdo já ocupa a largura toda sem ajuste extra. */
+
+    /* height fixa + flex-wrap fariam o conteúdo vazar para fora da
+       barra ao quebrar linha; min-height deixa ela crescer. */
+    .topbar {
+        height: auto;
+        min-height: var(--topbar-height);
+        padding: 10px 16px;
+        gap: 10px;
+    }
+    .topbar-title { min-width: 0; }
+    .topbar-title h2 { font-size: 16px; }
+    .topbar-title p {
+        font-size: 11px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
     .form-grid { grid-template-columns: 1fr; }
     .cards-grid { grid-template-columns: repeat(2, 1fr); }
+
+    /* Tabelas largas rolam dentro do próprio contêiner em vez de
+       empurrar a página inteira para o lado. */
+    .table-wrapper, .tabela-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
+
+@media (max-width: 480px) {
+    .cards-grid { grid-template-columns: 1fr; }
+    /* O texto dos botões do topo some; sobram os ícones. */
+    .topbar-btn span, .topbar-btn kbd { display: none; }
 }

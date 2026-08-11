@@ -37,6 +37,10 @@ const paginaTitulos = {
 // ─── NAVEGAÇÃO ─────────────────────────
 
 function mostrarSecao(secao) {
+    // No celular o menu fica sobreposto ao conteúdo: sem fechá-lo aqui,
+    // o usuário toca em "Clientes" e continua olhando para o menu.
+    if (typeof fecharMenuMobile === 'function') fecharMenuMobile();
+
     Object.values(secoes).forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = 'none';
@@ -80,10 +84,49 @@ function atualizarMenuAtivo(secao) {
 }
 
 // ─── SIDEBAR ───────────────────────────
+// São dois comportamentos diferentes, e confundi-los deixava o sistema
+// inutilizável no celular:
+//
+//   Desktop — a sidebar é fixa e o botão apenas a encolhe ('collapsed').
+//   Celular — ela fica fora da tela e precisa deslizar ('mobile-open').
+//
+// Antes existia só o primeiro. No celular a sidebar saía da tela e o
+// único botão de menu ficava dentro dela, então não havia como navegar
+// depois de entrar no sistema.
 
 function toggleSidebar() {
     document.getElementById('sidebar')?.classList.toggle('collapsed');
 }
+
+function abrirMenuMobile() {
+    document.getElementById('sidebar')?.classList.add('mobile-open');
+    document.getElementById('overlayMenu')?.classList.add('aberto');
+    document.getElementById('btnMenuMobile')?.setAttribute('aria-expanded', 'true');
+    // Trava a rolagem do fundo enquanto o menu está sobreposto.
+    document.body.style.overflow = 'hidden';
+}
+
+function fecharMenuMobile() {
+    document.getElementById('sidebar')?.classList.remove('mobile-open');
+    document.getElementById('overlayMenu')?.classList.remove('aberto');
+    document.getElementById('btnMenuMobile')?.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+}
+
+function menuMobileAberto() {
+    return document.getElementById('sidebar')?.classList.contains('mobile-open') === true;
+}
+
+// Esc fecha o menu, como em qualquer sobreposição.
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && menuMobileAberto()) fecharMenuMobile();
+});
+
+// Ao voltar para largura de desktop, garante que o estado de celular
+// não fique preso (menu aberto e body travado).
+window.addEventListener('resize', () => {
+    if (window.innerWidth > 768 && menuMobileAberto()) fecharMenuMobile();
+});
 
 // ─── MODAL GENÉRICO ────────────────────
 

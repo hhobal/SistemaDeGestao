@@ -101,10 +101,22 @@
 <!-- ═══════════════════════════════════════════
      MAIN WRAPPER
 ════════════════════════════════════════════ -->
+<!-- Escurece o conteúdo quando o menu está aberto no celular e serve
+     de área de toque para fechá-lo. -->
+<div class="overlay-menu" id="overlayMenu" onclick="fecharMenuMobile()"></div>
+
 <div class="main-wrapper">
 
   <!-- TOPBAR -->
   <header class="topbar">
+    <!-- Só aparece no celular (ver style.css). Precisa ficar FORA da
+         sidebar: no mobile ela sai da tela, e um botão dentro dela
+         sairia junto, deixando a navegação inalcançável. -->
+    <button class="btn-menu-mobile" onclick="abrirMenuMobile()"
+            aria-label="Abrir menu de navegação" aria-controls="sidebar" aria-expanded="false" id="btnMenuMobile">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+
     <div class="topbar-title">
       <h2 id="paginaTitulo">Página Inicial</h2>
       <p id="paginaSubtitulo">Visão geral do sistema</p>

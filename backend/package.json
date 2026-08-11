@@ -12,6 +12,7 @@
     "prisma:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
     "seed": "node prisma/seed.js",
+    "seed:demo": "node prisma/seed-demo.js",
     "migrar-localstorage": "node scripts/migrar-localstorage.js",
     "test": "vitest run",
     "test:watch": "vitest",
