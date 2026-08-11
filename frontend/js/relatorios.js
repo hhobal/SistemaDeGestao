@@ -104,7 +104,7 @@ function _listaTop5Clientes(clientes) {
     }
     el.innerHTML = clientes.map((c, i) => html`
         <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border);font-size:13px">
-            <span><strong style="color:var(--accent)">#${i+1}</strong> ${c.nome} <span style="color:var(--text-muted);font-size:11px">(${c.compras} compra${c.compras===1?'':'s'})</span></span>
+            <span><strong class="t-destaque">#${i+1}</strong> ${c.nome} <span style="color:var(--text-muted);font-size:11px">(${c.compras} compra${c.compras===1?'':'s'})</span></span>
             <span style="color:var(--success);font-weight:700">${fmt(c.total)}</span>
         </div>
     `).join('');

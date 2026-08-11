@@ -31,11 +31,11 @@ function _desenharTabelaUsuarios() {
                     <div class="user-avatar-mini">${(u.nome||'?').split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase()}</div>
                     <div>
                         <strong>${u.nome}</strong>${euMesmo ? ' <span style="font-size:10px;color:var(--accent)">(você)</span>' : ''}
-                        ${!u.ativo ? ' <span style="font-size:10px;color:var(--text-muted)">(inativo)</span>' : ''}
+                        ${!u.ativo ? ' <span class="t-10 t-mudo">(inativo)</span>' : ''}
                     </div>
                 </div>
             </td>
-            <td><span style="font-family:monospace;font-size:12px">${u.usuario}</span></td>
+            <td><span class="t-mono t-12">${u.usuario}</span></td>
             <td><span style="color:${perfilCor[u.perfil]||'var(--text-muted)'}"><i class="fa-solid fa-circle" style="font-size:8px;margin-right:4px"></i>${u.perfil}</span></td>
             <td>
                 <button class="btn-icon" title="Editar" onclick="abrirModalUsuario(${u.id})"><i class="fa-solid fa-pen"></i></button>

@@ -617,7 +617,7 @@ function renderizarPaginacao(containerId, totalItens, itensPorPagina, paginaAtua
 function emptyState(mensagem, icone = 'fa-inbox', acao = '') {
     return html`
     <tr><td colspan="99" style="text-align:center;padding:40px 20px">
-        <div style="color:var(--text-muted)">
+        <div class="t-mudo">
             <i class="fa-solid ${icone}" style="font-size:32px;margin-bottom:12px;display:block;opacity:.4"></i>
             <p style="font-size:13px;margin:0 0 8px">${mensagem}</p>
             ${acao ? html`<p style="font-size:12px;color:var(--accent)">${acao}</p>` : ''}

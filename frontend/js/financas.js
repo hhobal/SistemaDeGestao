@@ -76,7 +76,7 @@ function _desenharTabelaLancamentos() {
             return html`
             <tr${vencido ? ' style="background:rgba(248,113,113,0.06)"' : ''}>
                 <td>${dataFmt}${vencido ? ' <span style="color:var(--danger);font-size:10px;font-weight:700">VENCIDO</span>' : ''}</td>
-                <td>${l.descricao}${gerencialAutomatico ? ' <span title="Gerado automaticamente por Pedido/O.S." style="font-size:10px;color:var(--text-muted)"><i class="fa-solid fa-link"></i></span>' : ''}</td>
+                <td>${l.descricao}${gerencialAutomatico ? ' <span title="Gerado automaticamente por Pedido/O.S." class="t-10 t-mudo"><i class="fa-solid fa-link"></i></span>' : ''}</td>
                 <td><span class="tag">${l.categoria||'—'}</span></td>
                 <td style="color:${cor};font-weight:600">${l.tipo}</td>
                 <td style="color:${cor};font-weight:700">${l.tipo === 'receita' ? '+' : '-'}${fmt(l.valor)}</td>

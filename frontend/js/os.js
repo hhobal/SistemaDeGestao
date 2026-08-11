@@ -72,11 +72,11 @@ function _desenharTabelaOS() {
                 <td><span style="font-family:monospace;font-weight:700;color:var(--accent)">#${os.numero}</span></td>
                 <td>
                     <strong>${os.titulo}</strong>
-                    <br><span style="font-size:11px;color:var(--text-muted)">${os.descricao ? os.descricao.slice(0,60)+(os.descricao.length>60?'…':'') : ''}</span>
+                    <br><span class="t-11 t-mudo">${os.descricao ? os.descricao.slice(0,60)+(os.descricao.length>60?'…':'') : ''}</span>
                 </td>
                 <td>${os.cliente?.nome || '—'}</td>
                 <td>${os.responsavel?.nome || '—'}</td>
-                <td><span style="color:${priCor[os.prioridade]||'var(--accent)'}"><i class="fa-solid fa-flag" style="font-size:10px"></i> ${os.prioridade||'normal'}</span></td>
+                <td><span style="color:${priCor[os.prioridade]||'var(--accent)'}"><i class="fa-solid fa-flag t-10"></i> ${os.prioridade||'normal'}</span></td>
                 <td>${statusSelect}</td>
                 <td>${fmt(os.valor)}</td>
                 <td>${dataAberturaFmt}</td>

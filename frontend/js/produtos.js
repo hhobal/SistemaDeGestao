@@ -54,11 +54,11 @@ function _desenharTabelaProdutos() {
             const margem = preco > 0 && custo > 0 ? (((preco - custo) / preco) * 100).toFixed(0) : null;
             return html`
             <tr>
-                <td>${p.codigo ? html`<span style="font-family:monospace;font-size:12px">${p.codigo}</span>` : html`<span style="color:var(--text-muted)">—</span>`}</td>
+                <td>${p.codigo ? html`<span class="t-mono t-12">${p.codigo}</span>` : html`<span class="t-mudo">—</span>`}</td>
                 <td><strong>${p.nome}</strong></td>
                 <td><span class="tag">${p.categoria || '—'}</span></td>
                 <td>${fmt(p.preco)}${margem ? html`<br><span style="font-size:11px;color:var(--success)">${margem}% margem</span>` : ''}</td>
-                <td style="color:${corEstq};font-weight:600">${estq}${min > 0 && estq <= min ? ' <i class="fa-solid fa-triangle-exclamation" style="font-size:10px"></i>' : ''}</td>
+                <td style="color:${corEstq};font-weight:600">${estq}${min > 0 && estq <= min ? ' <i class="fa-solid fa-triangle-exclamation t-10"></i>' : ''}</td>
                 <td>
                     <button class="btn-icon" title="Editar" onclick="abrirModalProduto(${p.id})"><i class="fa-solid fa-pen"></i></button>
                     <button class="btn-icon btn-icon-danger" title="Excluir" onclick="excluirProduto(${p.id})"><i class="fa-solid fa-trash"></i></button>

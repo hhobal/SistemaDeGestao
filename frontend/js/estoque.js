@@ -80,7 +80,7 @@ function renderizarMovimentos() {
         <tr>
             <td>${dataFmt}</td>
             <td>${m.produto?.nome || '—'}</td>
-            <td><span style="color:${cor}"><i class="fa-solid ${icone}" style="font-size:10px"></i> ${m.tipo}</span></td>
+            <td><span style="color:${cor}"><i class="fa-solid ${icone} t-10"></i> ${m.tipo}</span></td>
             <td style="color:${cor};font-weight:700">${m.tipo === 'entrada' ? '+' : '-'}${m.quantidade}</td>
             <td style="color:var(--text-muted);font-size:12px">${m.motivo || '—'}</td>
             <td>${m.responsavel || '—'}</td>

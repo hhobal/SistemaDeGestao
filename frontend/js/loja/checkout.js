@@ -32,7 +32,7 @@ function preencherClienteInfo() {
   const sessaoCliente = lojaCarregarCliente();
   document.getElementById('clienteInfo').innerHTML = html`
     <strong>${sessaoCliente.nome}</strong><br>
-    <span style="font-size:12px;color:var(--muted)">${sessaoCliente.email}</span>`;
+    <span class="t-12 t-mudo">${sessaoCliente.email}</span>`;
 }
 
 function preencherParcelas() {
@@ -109,8 +109,8 @@ function preencherResumo() {
     </div>`).join('');
   const pagNome = { cartao:'Cartão de crédito', pix:'PIX', boleto:'Boleto' };
   document.getElementById('resumoTotal').innerHTML = html`
-    <div class="resumo-item"><span style="color:var(--muted)">Pagamento</span><span>${pagNome[pagSelecionado]}</span></div>
-    <div class="resumo-total"><span>Total</span><span style="color:var(--success)">${fmt(total)}</span></div>`;
+    <div class="resumo-item"><span class="t-mudo">Pagamento</span><span>${pagNome[pagSelecionado]}</span></div>
+    <div class="resumo-total"><span>Total</span><span class="t-sucesso">${fmt(total)}</span></div>`;
 }
 
 async function finalizarPedido() {

@@ -155,23 +155,23 @@
       <div id="dashAlertas" class="dash-alertas" style="display:none"></div>
       <div class="cards-grid">
         <div class="card card-stat">
-          <div class="card-stat-label"><i class="fa-solid fa-users" style="color:var(--accent)"></i> Clientes</div>
+          <div class="card-stat-label"><i class="fa-solid fa-users t-destaque"></i> Clientes</div>
           <div class="card-stat-value" id="totalClientes">0</div>
           <div class="card-stat-sub">cadastrados</div>
         </div>
         <div class="card card-stat">
-          <div class="card-stat-label"><i class="fa-solid fa-screwdriver-wrench" style="color:var(--warning)"></i> O.S. em aberto</div>
+          <div class="card-stat-label"><i class="fa-solid fa-screwdriver-wrench t-alerta"></i> O.S. em aberto</div>
           <div class="card-stat-value" id="totalOS">0</div>
           <div class="card-stat-sub">abertas + em andamento</div>
         </div>
         <div class="card card-stat">
-          <div class="card-stat-label"><i class="fa-solid fa-cubes" style="color:var(--success)"></i> Produtos</div>
+          <div class="card-stat-label"><i class="fa-solid fa-cubes t-sucesso"></i> Produtos</div>
           <div class="card-stat-value" id="totalProdutos">0</div>
           <div class="card-stat-sub">cadastrados</div>
         </div>
         <div class="card card-stat">
-          <div class="card-stat-label"><i class="fa-solid fa-circle-dollar-to-slot" style="color:var(--success)"></i> Faturamento</div>
-          <div class="card-stat-value" id="faturamentoTotal" style="font-size:20px">R$ 0,00</div>
+          <div class="card-stat-label"><i class="fa-solid fa-circle-dollar-to-slot t-sucesso"></i> Faturamento</div>
+          <div class="card-stat-value t-20" id="faturamentoTotal">R$ 0,00</div>
           <div class="card-stat-sub">O.S. concluídas</div>
         </div>
       </div>
@@ -183,13 +183,13 @@
 
     <!-- ══════════ PEDIDOS DA LOJA ══════════ -->
     <section id="pedidosSection">
-      <div class="cards-grid" style="margin-bottom:16px">
+      <div class="cards-grid mb-16">
         <div class="card card-stat">
-          <div class="card-stat-label"><i class="fa-solid fa-clock" style="color:var(--warning)"></i> Pendentes</div>
+          <div class="card-stat-label"><i class="fa-solid fa-clock t-alerta"></i> Pendentes</div>
           <div class="card-stat-value" id="pedPendentes">0</div>
         </div>
         <div class="card card-stat">
-          <div class="card-stat-label"><i class="fa-solid fa-spinner" style="color:var(--accent)"></i> Em preparo</div>
+          <div class="card-stat-label"><i class="fa-solid fa-spinner t-destaque"></i> Em preparo</div>
           <div class="card-stat-value" id="pedProcessando">0</div>
         </div>
         <div class="card card-stat">
@@ -197,15 +197,15 @@
           <div class="card-stat-value" id="pedEnviados">0</div>
         </div>
         <div class="card card-stat">
-          <div class="card-stat-label"><i class="fa-solid fa-circle-dollar-to-slot" style="color:var(--success)"></i> Faturado</div>
-          <div class="card-stat-value" id="pedFaturado" style="font-size:18px">R$ 0,00</div>
+          <div class="card-stat-label"><i class="fa-solid fa-circle-dollar-to-slot t-sucesso"></i> Faturado</div>
+          <div class="card-stat-value t-18" id="pedFaturado">R$ 0,00</div>
         </div>
       </div>
       <div class="section-toolbar">
-        <div class="search-box" style="flex:1"><i class="fa-solid fa-magnifying-glass"></i>
+        <div class="search-box flex-1"><i class="fa-solid fa-magnifying-glass"></i>
           <input type="text" id="pesquisaPedidos" placeholder="Buscar nº pedido, nome do cliente…" oninput="renderizarPedidos()">
         </div>
-        <select id="filtroStatusPedido" style="width:auto" onchange="renderizarPedidos()">
+        <select id="filtroStatusPedido" class="largura-auto" onchange="renderizarPedidos()">
           <option value="">Todos os status</option>
           <option value="pendente">Pendente</option>
           <option value="processando">Em preparo</option>
@@ -229,16 +229,16 @@
     <!-- ══════════ CLIENTES ══════════ -->
     <section id="clientesSection">
       <div class="section-toolbar">
-        <div class="search-box" style="flex:1"><i class="fa-solid fa-magnifying-glass"></i>
+        <div class="search-box flex-1"><i class="fa-solid fa-magnifying-glass"></i>
           <input type="text" id="pesquisaClientes" placeholder="Buscar por nome, e-mail, telefone, CPF…" oninput="renderizarClientes()">
         </div>
-        <select id="filtroStatusCliente" style="width:auto" onchange="renderizarClientes()">
+        <select id="filtroStatusCliente" class="largura-auto" onchange="renderizarClientes()">
           <option value="">Todos os status</option>
           <option value="ativo">Ativo</option>
           <option value="inativo">Inativo</option>
           <option value="inadimplente">Inadimplente</option>
         </select>
-        <span style="font-size:12px;color:var(--text-muted)">Total: <strong id="totalClientesLista">0</strong></span>
+        <span class="t-12 t-mudo">Total: <strong id="totalClientesLista">0</strong></span>
         <button class="btn-primary" onclick="abrirModalCliente()"><i class="fa-solid fa-plus"></i> Novo Cliente</button>
       </div>
       <div class="tabela-container">
@@ -253,7 +253,7 @@
     <!-- ══════════ FORNECEDORES ══════════ -->
     <section id="fornecedoresSection">
       <div class="section-toolbar">
-        <div class="search-box" style="flex:1"><i class="fa-solid fa-magnifying-glass"></i>
+        <div class="search-box flex-1"><i class="fa-solid fa-magnifying-glass"></i>
           <input type="text" id="pesquisaFornecedores" placeholder="Buscar empresa, contato, CNPJ…" oninput="renderizarFornecedores()">
         </div>
         <button class="btn-primary" onclick="abrirModalFornecedor()"><i class="fa-solid fa-plus"></i> Novo Fornecedor</button>
@@ -270,10 +270,10 @@
     <!-- ══════════ PRODUTOS ══════════ -->
     <section id="produtosSection">
       <div class="section-toolbar">
-        <div class="search-box" style="flex:1"><i class="fa-solid fa-magnifying-glass"></i>
+        <div class="search-box flex-1"><i class="fa-solid fa-magnifying-glass"></i>
           <input type="text" id="pesquisaProdutos" placeholder="Buscar nome, código SKU…" oninput="renderizarProdutos()">
         </div>
-        <select id="filtroCategoriaProduto" style="width:auto" onchange="renderizarProdutos()">
+        <select id="filtroCategoriaProduto" class="largura-auto" onchange="renderizarProdutos()">
           <option value="">Todas as categorias</option>
         </select>
         <button class="btn-primary" onclick="abrirModalProduto()"><i class="fa-solid fa-plus"></i> Novo Produto</button>
@@ -289,29 +289,29 @@
 
     <!-- ══════════ ORDENS DE SERVIÇO ══════════ -->
     <section id="osSection">
-      <div class="cards-grid" style="margin-bottom:16px">
+      <div class="cards-grid mb-16">
         <div class="card card-stat">
-          <div class="card-stat-label"><i class="fa-solid fa-folder-open" style="color:var(--warning)"></i> Abertas</div>
+          <div class="card-stat-label"><i class="fa-solid fa-folder-open t-alerta"></i> Abertas</div>
           <div class="card-stat-value" id="osAbertas">0</div>
         </div>
         <div class="card card-stat">
-          <div class="card-stat-label"><i class="fa-solid fa-spinner" style="color:var(--accent)"></i> Em andamento</div>
+          <div class="card-stat-label"><i class="fa-solid fa-spinner t-destaque"></i> Em andamento</div>
           <div class="card-stat-value" id="osAndamento">0</div>
         </div>
         <div class="card card-stat">
-          <div class="card-stat-label"><i class="fa-solid fa-circle-check" style="color:var(--success)"></i> Concluídas</div>
+          <div class="card-stat-label"><i class="fa-solid fa-circle-check t-sucesso"></i> Concluídas</div>
           <div class="card-stat-value" id="osConcluidas">0</div>
         </div>
         <div class="card card-stat">
-          <div class="card-stat-label"><i class="fa-solid fa-circle-dollar-to-slot" style="color:var(--success)"></i> Faturado</div>
-          <div class="card-stat-value" id="osFaturado" style="font-size:18px">R$ 0,00</div>
+          <div class="card-stat-label"><i class="fa-solid fa-circle-dollar-to-slot t-sucesso"></i> Faturado</div>
+          <div class="card-stat-value t-18" id="osFaturado">R$ 0,00</div>
         </div>
       </div>
       <div class="section-toolbar">
-        <div class="search-box" style="flex:1"><i class="fa-solid fa-magnifying-glass"></i>
+        <div class="search-box flex-1"><i class="fa-solid fa-magnifying-glass"></i>
           <input type="text" id="pesquisaOS" placeholder="Buscar nº, título, cliente…" oninput="renderizarOS()">
         </div>
-        <select id="filtroStatusOS" style="width:auto" onchange="renderizarOS()">
+        <select id="filtroStatusOS" class="largura-auto" onchange="renderizarOS()">
           <option value="">Todos os status</option>
           <option value="aberta">Aberta</option>
           <option value="andamento">Em andamento</option>
@@ -333,7 +333,7 @@
     <section id="estoqueSection">
       <div class="section-toolbar">
         <h3 style="font-size:14px;font-weight:600;flex:1">Situação do estoque</h3>
-        <select id="filtroMovTipo" style="width:auto" onchange="renderizarMovimentos()">
+        <select id="filtroMovTipo" class="largura-auto" onchange="renderizarMovimentos()">
           <option value="">Todos os movimentos</option>
           <option value="entrada">Entradas</option>
           <option value="saida">Saídas</option>
@@ -352,34 +352,34 @@
 
     <!-- ══════════ FINANÇAS ══════════ -->
     <section id="financasSection">
-      <div class="cards-grid" style="margin-bottom:16px">
+      <div class="cards-grid mb-16">
         <div class="card card-stat">
-          <div class="card-stat-label"><i class="fa-solid fa-arrow-down" style="color:var(--success)"></i> Receitas</div>
+          <div class="card-stat-label"><i class="fa-solid fa-arrow-down t-sucesso"></i> Receitas</div>
           <div class="card-stat-value" id="finReceitas" style="color:var(--success);font-size:20px">R$ 0,00</div>
         </div>
         <div class="card card-stat">
-          <div class="card-stat-label"><i class="fa-solid fa-arrow-up" style="color:var(--danger)"></i> Despesas</div>
+          <div class="card-stat-label"><i class="fa-solid fa-arrow-up t-perigo"></i> Despesas</div>
           <div class="card-stat-value" id="finDespesas" style="color:var(--danger);font-size:20px">R$ 0,00</div>
         </div>
         <div class="card card-stat">
-          <div class="card-stat-label"><i class="fa-solid fa-scale-balanced" style="color:var(--accent)"></i> Saldo</div>
-          <div class="card-stat-value" id="finSaldo" style="font-size:20px">R$ 0,00</div>
+          <div class="card-stat-label"><i class="fa-solid fa-scale-balanced t-destaque"></i> Saldo</div>
+          <div class="card-stat-value t-20" id="finSaldo">R$ 0,00</div>
         </div>
         <div class="card card-stat">
-          <div class="card-stat-label"><i class="fa-solid fa-clock" style="color:var(--warning)"></i> Pendentes</div>
+          <div class="card-stat-label"><i class="fa-solid fa-clock t-alerta"></i> Pendentes</div>
           <div class="card-stat-value" id="finPendentes">0</div>
         </div>
       </div>
       <div class="section-toolbar">
-        <div class="search-box" style="flex:1"><i class="fa-solid fa-magnifying-glass"></i>
+        <div class="search-box flex-1"><i class="fa-solid fa-magnifying-glass"></i>
           <input type="text" id="pesquisaLancamentos" placeholder="Buscar descrição, categoria…" oninput="renderizarLancamentos()">
         </div>
-        <select id="filtroTipoLanc" style="width:auto" onchange="renderizarLancamentos()">
+        <select id="filtroTipoLanc" class="largura-auto" onchange="renderizarLancamentos()">
           <option value="">Tipo</option>
           <option value="receita">Receitas</option>
           <option value="despesa">Despesas</option>
         </select>
-        <select id="filtroStatusLanc" style="width:auto" onchange="renderizarLancamentos()">
+        <select id="filtroStatusLanc" class="largura-auto" onchange="renderizarLancamentos()">
           <option value="">Status</option>
           <option value="pago">Pago/Recebido</option>
           <option value="pendente">Pendente</option>
@@ -398,7 +398,7 @@
     <!-- ══════════ AGENDA ══════════ -->
     <section id="agendaSection">
       <div class="section-toolbar">
-        <h3 style="flex:1;font-size:14px;font-weight:600">Calendário</h3>
+        <h3 class="flex-1 t-14 t-semi">Calendário</h3>
         <button class="btn-primary" onclick="abrirModalEvento()"><i class="fa-solid fa-plus"></i> Novo Evento</button>
       </div>
       <div class="calendar-wrapper">
@@ -425,7 +425,7 @@
     <!-- ══════════ TAREFAS ══════════ -->
     <section id="tarefasSection">
       <div class="section-toolbar">
-        <h3 style="flex:1;font-size:14px;font-weight:600">Quadro Kanban</h3>
+        <h3 class="flex-1 t-14 t-semi">Quadro Kanban</h3>
         <button class="btn-primary" onclick="abrirModalTarefa()"><i class="fa-solid fa-plus"></i> Nova Tarefa</button>
       </div>
       <div class="kanban-board" id="kanbanBoard"></div>
@@ -434,7 +434,7 @@
     <!-- ══════════ NOTAS ══════════ -->
     <section id="notasSection">
       <div class="section-toolbar">
-        <h3 style="flex:1;font-size:14px;font-weight:600">Notas rápidas</h3>
+        <h3 class="flex-1 t-14 t-semi">Notas rápidas</h3>
         <button class="btn-primary" onclick="abrirModalNota()"><i class="fa-solid fa-plus"></i> Nova Nota</button>
       </div>
       <div class="notas-grid" id="notasGrid"></div>
@@ -442,13 +442,13 @@
 
     <!-- ══════════ RELATÓRIOS ══════════ -->
     <section id="relatoriosSection">
-      <div class="section-toolbar" style="margin-bottom:20px">
-        <h3 style="flex:1;font-size:14px;font-weight:600">Análises e relatórios</h3>
+      <div class="section-toolbar mb-20">
+        <h3 class="flex-1 t-14 t-semi">Análises e relatórios</h3>
         <button class="btn-secondary" onclick="exportarCSV()"><i class="fa-solid fa-download"></i> CSV Financeiro</button>
         <button class="btn-secondary" onclick="exportarCSVOS()"><i class="fa-solid fa-download"></i> CSV O.S.</button>
         <button class="btn-secondary" onclick="exportarDados()"><i class="fa-solid fa-database"></i> Backup</button>
       </div>
-      <div class="charts-grid" style="margin-bottom:20px">
+      <div class="charts-grid mb-20">
         <div class="chart-card"><h4>Situação das O.S.</h4><canvas id="graficoRelOS"></canvas></div>
         <div class="chart-card"><h4>Fluxo de Caixa Mensal</h4><canvas id="graficoRelFinancas"></canvas></div>
       </div>
@@ -467,7 +467,7 @@
     <!-- ══════════ USUÁRIOS ══════════ -->
     <section id="usuariosSection">
       <div class="section-toolbar">
-        <h3 style="flex:1;font-size:14px;font-weight:600">Usuários do sistema</h3>
+        <h3 class="flex-1 t-14 t-semi">Usuários do sistema</h3>
         <button class="btn-primary" onclick="abrirModalUsuario()"><i class="fa-solid fa-plus"></i> Novo Usuário</button>
       </div>
       <div class="tabela-container">
@@ -490,7 +490,7 @@
 <div class="modal" id="modalDetalhesPedido">
   <div class="modal-box modal-lg">
     <div class="modal-header">
-      <h3><i class="fa-solid fa-bag-shopping" style="color:var(--accent)"></i> Detalhes do Pedido</h3>
+      <h3><i class="fa-solid fa-bag-shopping t-destaque"></i> Detalhes do Pedido</h3>
       <button class="modal-close" onclick="fecharModal('modalDetalhesPedido')"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="modal-body" id="detalhesPedidoConteudo"></div>
@@ -504,7 +504,7 @@
 <div class="modal" id="modalCliente">
   <div class="modal-box">
     <div class="modal-header">
-      <h3><i class="fa-solid fa-user" style="color:var(--accent)"></i> Cliente</h3>
+      <h3><i class="fa-solid fa-user t-destaque"></i> Cliente</h3>
       <button class="modal-close" onclick="fecharModalCliente()"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="modal-body">
@@ -535,7 +535,7 @@
 <div class="modal" id="modalFornecedor">
   <div class="modal-box">
     <div class="modal-header">
-      <h3><i class="fa-solid fa-truck" style="color:var(--accent)"></i> Fornecedor</h3>
+      <h3><i class="fa-solid fa-truck t-destaque"></i> Fornecedor</h3>
       <button class="modal-close" onclick="fecharModalFornecedor()"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="modal-body">
@@ -565,7 +565,7 @@
 <div class="modal" id="modalProduto">
   <div class="modal-box">
     <div class="modal-header">
-      <h3><i class="fa-solid fa-cubes" style="color:var(--accent)"></i> Produto / Serviço</h3>
+      <h3><i class="fa-solid fa-cubes t-destaque"></i> Produto / Serviço</h3>
       <button class="modal-close" onclick="fecharModalProduto()"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="modal-body">
@@ -597,7 +597,7 @@
 <div class="modal" id="modalOS">
   <div class="modal-box modal-lg">
     <div class="modal-header">
-      <h3><i class="fa-solid fa-screwdriver-wrench" style="color:var(--warning)"></i> Ordem de Serviço</h3>
+      <h3><i class="fa-solid fa-screwdriver-wrench t-alerta"></i> Ordem de Serviço</h3>
       <button class="modal-close" onclick="fecharModalOS()"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="modal-body">
@@ -637,7 +637,7 @@
 <div class="modal" id="modalMovimento">
   <div class="modal-box modal-sm">
     <div class="modal-header">
-      <h3><i class="fa-solid fa-arrows-rotate" style="color:var(--accent)"></i> Registrar Movimento</h3>
+      <h3><i class="fa-solid fa-arrows-rotate t-destaque"></i> Registrar Movimento</h3>
       <button class="modal-close" onclick="fecharModalMovimento()"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="modal-body">
@@ -662,7 +662,7 @@
 <div class="modal" id="modalLancamento">
   <div class="modal-box">
     <div class="modal-header">
-      <h3><i class="fa-solid fa-wallet" style="color:var(--success)"></i> Lançamento Financeiro</h3>
+      <h3><i class="fa-solid fa-wallet t-sucesso"></i> Lançamento Financeiro</h3>
       <button class="modal-close" onclick="fecharModalLancamento()"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="modal-body">
@@ -703,7 +703,7 @@
 <div class="modal" id="modalEvento">
   <div class="modal-box modal-sm">
     <div class="modal-header">
-      <h3><i class="fa-solid fa-calendar-plus" style="color:var(--accent)"></i> Novo Evento</h3>
+      <h3><i class="fa-solid fa-calendar-plus t-destaque"></i> Novo Evento</h3>
       <button class="modal-close" onclick="fecharModalEvento()"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="modal-body">
@@ -733,7 +733,7 @@
 <div class="modal" id="modalTarefa">
   <div class="modal-box modal-sm">
     <div class="modal-header">
-      <h3><i class="fa-solid fa-list-check" style="color:var(--accent)"></i> Tarefa</h3>
+      <h3><i class="fa-solid fa-list-check t-destaque"></i> Tarefa</h3>
       <button class="modal-close" onclick="fecharModalTarefa()"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="modal-body">
@@ -770,7 +770,7 @@
 <div class="modal" id="modalNota">
   <div class="modal-box modal-sm">
     <div class="modal-header">
-      <h3><i class="fa-solid fa-note-sticky" style="color:var(--warning)"></i> Nota</h3>
+      <h3><i class="fa-solid fa-note-sticky t-alerta"></i> Nota</h3>
       <button class="modal-close" onclick="fecharModalNota()"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="modal-body">
@@ -791,7 +791,7 @@
 <div class="modal" id="modalUsuario">
   <div class="modal-box modal-sm">
     <div class="modal-header">
-      <h3><i class="fa-solid fa-user-shield" style="color:var(--accent)"></i> Usuário</h3>
+      <h3><i class="fa-solid fa-user-shield t-destaque"></i> Usuário</h3>
       <button class="modal-close" onclick="fecharModalUsuario()"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="modal-body">
@@ -807,7 +807,7 @@
       </div>
       <div class="form-group">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-          <input type="checkbox" id="usuarioAtivo" checked style="width:auto">
+          <input type="checkbox" id="usuarioAtivo" checked class="largura-auto">
           Usuário ativo (desmarque para bloquear o acesso sem excluir)
         </label>
       </div>
@@ -823,13 +823,13 @@
 <div class="modal" id="modalPerfil">
   <div class="modal-box modal-sm">
     <div class="modal-header">
-      <h3><i class="fa-solid fa-circle-user" style="color:var(--accent)"></i> Meu Perfil</h3>
+      <h3><i class="fa-solid fa-circle-user t-destaque"></i> Meu Perfil</h3>
       <button class="modal-close" onclick="fecharModalPerfil()"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="modal-body">
       <div class="form-group"><label>Nome</label><input type="text" id="perfilNome" placeholder="Seu nome"></div>
       <hr style="border-color:var(--border);margin:4px 0">
-      <p style="font-size:12px;color:var(--text-muted)">Para trocar a senha, preencha os campos abaixo:</p>
+      <p class="t-12 t-mudo">Para trocar a senha, preencha os campos abaixo:</p>
       <div class="form-group"><label>Senha atual</label><input type="password" id="perfilSenhaAtual" placeholder="••••••••"></div>
       <div class="form-group"><label>Nova senha</label><input type="password" id="perfilNovaSenha" placeholder="••••••••"></div>
     </div>

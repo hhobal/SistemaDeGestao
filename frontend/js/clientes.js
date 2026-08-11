@@ -43,7 +43,7 @@ function renderizarClientes() {
         tabela.innerHTML = pagina.map(c => html`
             <tr>
                 <td>${c.id}</td>
-                <td><strong>${c.nome}</strong>${c.cpf ? html`<br><span style="font-size:11px;color:var(--text-muted)">${c.cpf}</span>` : ''}</td>
+                <td><strong>${c.nome}</strong>${c.cpf ? html`<br><span class="t-11 t-mudo">${c.cpf}</span>` : ''}</td>
                 <td>${c.email || '—'}</td>
                 <td>${c.telefone || '—'}</td>
                 <td><span class="status-badge ${statusCls[c.status||'ativo']}">${statusNome[c.status||'ativo']}</span></td>

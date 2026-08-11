@@ -76,7 +76,7 @@ function renderizarTabelaEventos() {
         <tr>
             <td>${d}</td>
             <td>${e.hora || '—'}</td>
-            <td><strong>${e.titulo}</strong>${e.descricao ? html`<br><span style="font-size:11px;color:var(--text-muted)">${e.descricao}</span>` : ''}</td>
+            <td><strong>${e.titulo}</strong>${e.descricao ? html`<br><span class="t-11 t-mudo">${e.descricao}</span>` : ''}</td>
             <td><span style="color:${cores[e.tipo]||'var(--accent)'}"><i class="fa-solid fa-circle" style="font-size:8px;margin-right:4px"></i>${e.tipo}</span></td>
             <td><button class="btn-icon btn-icon-danger" onclick="excluirEvento(${e.id})"><i class="fa-solid fa-trash"></i></button></td>
         </tr>`;

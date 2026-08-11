@@ -75,17 +75,17 @@ function _desenharTabelaPedidos() {
             <td><span style="font-family:monospace;font-weight:700;color:var(--accent)">#${p.numero}</span></td>
             <td>
                 <strong>${p.cliente?.nome || '—'}</strong>
-                <br><span style="font-size:11px;color:var(--text-muted)">${p.cliente?.email||''}</span>
+                <br><span class="t-11 t-mudo">${p.cliente?.email||''}</span>
             </td>
             <td>
                 <div style="font-size:12px;max-width:200px">
                     ${(p.itens||[]).map(i => `${i.nome} ×${i.quantidade}`).join('<br>')}
                 </div>
             </td>
-            <td style="font-weight:700;color:var(--success)">${fmt(p.total)}</td>
+            <td class="t-forte t-sucesso">${fmt(p.total)}</td>
             <td><span class="tag">${pagNome[p.pagamento]||p.pagamento||'—'}</span></td>
             <td>${statusCampo}</td>
-            <td style="font-size:11px;color:var(--text-muted)">${p.data ? new Date(p.data).toLocaleDateString('pt-BR') : '—'}</td>
+            <td class="t-11 t-mudo">${p.data ? new Date(p.data).toLocaleDateString('pt-BR') : '—'}</td>
             <td>
                 <button class="btn-icon" onclick="verDetalhesPedido(${p.id})" title="Ver detalhes"><i class="fa-solid fa-eye"></i></button>
                 <button class="btn-icon btn-icon-danger" onclick="excluirPedido(${p.id})" title="Excluir"><i class="fa-solid fa-trash"></i></button>
@@ -134,23 +134,23 @@ async function verDetalhesPedido(id) {
     document.getElementById('detalhesPedidoConteudo').innerHTML = html`
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
             <div>
-                <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">Pedido</div>
+                <div class="t-11 t-mudo mb-4">Pedido</div>
                 <div style="font-size:20px;font-weight:700;color:var(--accent)">#${p.numero}</div>
                 <div style="font-size:12px;color:var(--text-muted);margin-top:2px">${p.data ? new Date(p.data).toLocaleDateString('pt-BR') : ''}</div>
             </div>
             <div>
-                <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">Pagamento</div>
+                <div class="t-11 t-mudo mb-4">Pagamento</div>
                 <div style="font-size:14px;font-weight:600">${pagNome[p.pagamento]||p.pagamento}</div>
-                ${p.pagamento==='cartao' && p.parcelas>1 ? html`<div style="font-size:12px;color:var(--text-muted)">${p.parcelas}× sem juros</div>` : ''}
+                ${p.pagamento==='cartao' && p.parcelas>1 ? html`<div class="t-12 t-mudo">${p.parcelas}× sem juros</div>` : ''}
             </div>
         </div>
 
         <div style="background:var(--bg-secondary);border-radius:8px;padding:14px;margin-bottom:14px">
             <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;font-weight:600">CLIENTE</div>
             <div style="font-weight:600">${p.cliente?.nome || '—'}</div>
-            <div style="font-size:12px;color:var(--text-muted)">${p.cliente?.email||''}</div>
-            <div style="font-size:12px;color:var(--text-muted)">${p.cliente?.telefone||''}</div>
-            ${p.enderecoEntrega ? html`<div style="font-size:12px;color:var(--text-muted);margin-top:4px"><i class="fa-solid fa-location-dot" style="font-size:10px"></i> ${p.enderecoEntrega}</div>` : ''}
+            <div class="t-12 t-mudo">${p.cliente?.email||''}</div>
+            <div class="t-12 t-mudo">${p.cliente?.telefone||''}</div>
+            ${p.enderecoEntrega ? html`<div style="font-size:12px;color:var(--text-muted);margin-top:4px"><i class="fa-solid fa-location-dot t-10"></i> ${p.enderecoEntrega}</div>` : ''}
         </div>
 
         <div style="background:var(--bg-secondary);border-radius:8px;padding:14px;margin-bottom:14px">
@@ -161,11 +161,11 @@ async function verDetalhesPedido(id) {
                 <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
                     <div>
                         <div style="font-size:13px;font-weight:500">${item.nome}</div>
-                        <div style="font-size:11px;color:var(--text-muted)">Qtd: ${item.quantidade} × ${fmt(item.precoUnitario)}</div>
+                        <div class="t-11 t-mudo">Qtd: ${item.quantidade} × ${fmt(item.precoUnitario)}</div>
                     </div>
                     <div style="text-align:right">
-                        <div style="font-weight:700;color:var(--success)">${fmt(item.subtotal)}</div>
-                        ${custoItem > 0 ? html`<div style="font-size:10px;color:var(--text-muted)">custo: ${fmt(custoItem)}</div>` : ''}
+                        <div class="t-forte t-sucesso">${fmt(item.subtotal)}</div>
+                        ${custoItem > 0 ? html`<div class="t-10 t-mudo">custo: ${fmt(custoItem)}</div>` : ''}
                     </div>
                 </div>`;
             })}
@@ -173,13 +173,13 @@ async function verDetalhesPedido(id) {
 
         <div style="background:var(--bg-secondary);border-radius:8px;padding:14px">
             <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px">
-                <span style="color:var(--text-muted)">Subtotal</span>
+                <span class="t-mudo">Subtotal</span>
                 <span>${fmt(p.total)}</span>
             </div>
             ${custoTotal > 0 ? html`
             <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px">
-                <span style="color:var(--text-muted)">Custo total (CMV)</span>
-                <span style="color:var(--danger)">−${fmt(custoTotal)}</span>
+                <span class="t-mudo">Custo total (CMV)</span>
+                <span class="t-perigo">−${fmt(custoTotal)}</span>
             </div>
             <div style="display:flex;justify-content:space-between;padding:8px 0 4px;font-size:14px;font-weight:700;border-top:1px solid var(--border);margin-top:4px">
                 <span>Lucro bruto</span>

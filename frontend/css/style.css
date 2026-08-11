@@ -611,3 +611,50 @@ body.login-page { display: flex; align-items: center; justify-content: center; m
     /* O texto dos botões do topo some; sobram os ícones. */
     .topbar-btn span, .topbar-btn kbd { display: none; }
 }
+
+/* ─── UTILITÁRIOS ─────────────────────────
+   Extraídos de atributos style= espalhados pelo HTML e pelos templates
+   do JavaScript. Enquanto a cor e o tamanho ficavam fixos na marcação,
+   era impossível trocar o tema pelo CSS: cada ajuste exigia caçar
+   `color:var(...)` dentro de template strings.
+
+   São componíveis de propósito — `class="t-11 t-mudo"` cobre o que
+   antes exigiria uma classe para cada combinação de tamanho e cor.
+
+   Levam !important porque substituem estilos inline, que venciam
+   qualquer regra de componente. Sem isso, a conversão mudaria a
+   aparência em qualquer lugar onde houvesse uma regra mais específica.
+   ───────────────────────────────────────── */
+
+/* Cor do texto */
+.t-destaque { color: var(--accent) !important; }
+.t-sucesso  { color: var(--success) !important; }
+.t-alerta   { color: var(--warning) !important; }
+.t-perigo   { color: var(--danger) !important; }
+.t-mudo     { color: var(--text-muted) !important; }
+
+/* Tamanho do texto */
+.t-8  { font-size: 8px !important; }
+.t-10 { font-size: 10px !important; }
+.t-11 { font-size: 11px !important; }
+.t-12 { font-size: 12px !important; }
+.t-13 { font-size: 13px !important; }
+.t-14 { font-size: 14px !important; }
+.t-18 { font-size: 18px !important; }
+.t-20 { font-size: 20px !important; }
+
+/* Peso do texto */
+.t-semi  { font-weight: 600 !important; }
+.t-forte { font-weight: 700 !important; }
+.t-mono  { font-family: monospace !important; }
+
+/* Layout */
+.flex-1       { flex: 1 !important; }
+.largura-auto { width: auto !important; }
+
+/* Espaçamento inferior */
+.mb-4  { margin-bottom: 4px !important; }
+.mb-10 { margin-bottom: 10px !important; }
+.mb-14 { margin-bottom: 14px !important; }
+.mb-16 { margin-bottom: 16px !important; }
+.mb-20 { margin-bottom: 20px !important; }

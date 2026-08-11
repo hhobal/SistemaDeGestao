@@ -45,7 +45,7 @@ function _desenharKanban() {
                 ${t.descricao ? html`<div class="kanban-card-meta">${t.descricao}</div>` : ''}
                 <div class="kanban-card-footer">
                     ${dataLimiteISO ? html`<span style="font-size:10px;color:${atrasada ? 'var(--danger)' : 'var(--text-muted)'}"><i class="fa-solid fa-calendar-day"></i> ${new Date(dataLimiteISO+'T12:00:00').toLocaleDateString('pt-BR')}</span>` : '<span></span>'}
-                    ${resp ? html`<span style="font-size:10px;color:var(--text-muted)"><i class="fa-solid fa-user"></i> ${resp.split(' ')[0]}</span>` : ''}
+                    ${resp ? html`<span class="t-10 t-mudo"><i class="fa-solid fa-user"></i> ${resp.split(' ')[0]}</span>` : ''}
                 </div>
             </div>`;
         });

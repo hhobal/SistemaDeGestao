@@ -130,7 +130,7 @@ input.erro{border-color:var(--danger)}
   <div class="topo-conta">
     <div>
       <h2 id="contaNomeCliente">Minha conta</h2>
-      <p style="font-size:12px;color:var(--muted)" id="contaEmailCliente"></p>
+      <p class="t-12 t-mudo" id="contaEmailCliente"></p>
     </div>
     <div style="display:flex;gap:8px">
       <a class="btn btn-secundario" href="loja.html" style="width:auto;padding:9px 14px"><i class="fa-solid fa-bag-shopping"></i> Loja</a>
@@ -311,7 +311,7 @@ function montarResumoConta() {
   document.getElementById('resumoConta').innerHTML = `
     <div class="resumo-card"><b>${pedidosCliente.length}</b><span>Pedidos totais</span></div>
     <div class="resumo-card"><b>${emAndamento}</b><span>Em andamento</span></div>
-    <div class="resumo-card"><b style="color:var(--success)">${fmt(totalGasto)}</b><span>Total gasto</span></div>`;
+    <div class="resumo-card"><b class="t-sucesso">${fmt(totalGasto)}</b><span>Total gasto</span></div>`;
 }
 
 function montarChipsStatus() {
@@ -349,7 +349,7 @@ function _desenharPedidosCliente(pedidos) {
   const ordem = ['pendente','processando','enviado','entregue'];
 
   if (pedidosCliente.length === 0) {
-    container.innerHTML = `<div class="vazio"><i class="fa-solid fa-bag-shopping"></i>Você ainda não fez nenhum pedido.<br><a href="loja.html" style="color:var(--accent)">Ver produtos da loja →</a></div>`;
+    container.innerHTML = `<div class="vazio"><i class="fa-solid fa-bag-shopping"></i>Você ainda não fez nenhum pedido.<br><a href="loja.html" class="t-destaque">Ver produtos da loja →</a></div>`;
     return;
   }
   if (pedidos.length === 0) {
