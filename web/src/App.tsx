@@ -6,6 +6,7 @@ import { Shell } from './layout/Shell';
 import { Login } from './paginas/Login';
 import { Dashboard } from './paginas/Dashboard';
 import { Clientes } from './paginas/Clientes';
+import { Produtos } from './paginas/Produtos';
 import { ErroApi } from './lib/api';
 
 const clienteQuery = new QueryClient({
@@ -36,7 +37,7 @@ export default function App() {
               <Route element={<Shell />}>
                 <Route index element={<Dashboard />} />
                 <Route path="clientes" element={<Clientes />} />
-                <Route path="produtos" element={<EmBreve titulo="Produtos" />} />
+                <Route path="produtos" element={<Produtos />} />
                 <Route path="pedidos" element={<EmBreve titulo="Pedidos" />} />
                 <Route path="os" element={<EmBreve titulo="Ordens de Serviço" />} />
                 <Route path="financas" element={<EmBreve titulo="Finanças" />} />
