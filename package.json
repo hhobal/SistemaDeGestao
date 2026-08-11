@@ -9,6 +9,7 @@
     "start": "npm run start --prefix backend",
     "setup": "npm install --prefix backend && npm run prisma:generate --prefix backend",
     "seed": "npm run seed --prefix backend",
+    "seed:demo": "npm run seed:demo --prefix backend",
     "db:migrate": "npm run prisma:migrate --prefix backend",
     "db:studio": "npm run prisma:studio --prefix backend",
     "test": "npm test --prefix backend"
