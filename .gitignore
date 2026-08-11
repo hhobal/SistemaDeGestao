@@ -29,6 +29,9 @@ build/
 .vercel
 .netlify
 
+# Pasta montada por scripts/montar-site.js no build da Vercel
+site/
+
 # ─── Backups exportados pelo sistema ────
 backups/
 /backups/

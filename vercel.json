@@ -1,7 +1,29 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "outputDirectory": "frontend",
-  "trailingSlash": false,
+
+  "//": [
+    "Um único projeto da Vercel serve as duas interfaces:",
+    "  /         → React (web/), em migração",
+    "  /legado/  → versão anterior (frontend/), completa",
+    "",
+    "Enquanto a migração não termina, a versão anterior é a única com",
+    "todas as telas e com a loja virtual — a parte visível sem login.",
+    "Quando o React alcançar paridade, basta remover a cópia do legado",
+    "em scripts/montar-site.js e apagar estas rotas."
+  ],
+
+  "buildCommand": "npm ci --prefix web && npm run build --prefix web && node scripts/montar-site.js",
+  "outputDirectory": "site",
+  "installCommand": "echo 'Dependências instaladas dentro do buildCommand'",
+
+  "rewrites": [
+    {
+      "//": "Rotas do React Router só existem no navegador. Sem isto, recarregar /clientes daria 404. /assets e /legado ficam de fora: são arquivos reais.",
+      "source": "/((?!assets/|legado/).*)",
+      "destination": "/index.html"
+    }
+  ],
+
   "headers": [
     {
       "source": "/(.*)",
@@ -12,10 +34,18 @@
       ]
     },
     {
-      "source": "/(css|js)/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=3600, must-revalidate" }
-      ]
+      "//": "O Vite põe hash no nome: o conteúdo nunca muda sem o nome mudar junto.",
+      "source": "/assets/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    },
+    {
+      "//": "A versão anterior não tem hash no nome dos arquivos, então precisa revalidar.",
+      "source": "/legado/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
+    },
+    {
+      "source": "/index.html",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
     }
   ]
 }
