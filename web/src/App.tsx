@@ -8,6 +8,7 @@ import { Dashboard } from './paginas/Dashboard';
 import { Clientes } from './paginas/Clientes';
 import { Produtos } from './paginas/Produtos';
 import { Pedidos } from './paginas/Pedidos';
+import { OrdensServico } from './paginas/OrdensServico';
 import { ErroApi } from './lib/api';
 
 const clienteQuery = new QueryClient({
@@ -40,7 +41,7 @@ export default function App() {
                 <Route path="clientes" element={<Clientes />} />
                 <Route path="produtos" element={<Produtos />} />
                 <Route path="pedidos" element={<Pedidos />} />
-                <Route path="os" element={<EmBreve titulo="Ordens de Serviço" />} />
+                <Route path="os" element={<OrdensServico />} />
                 <Route path="financas" element={<EmBreve titulo="Finanças" />} />
               </Route>
             </Route>
