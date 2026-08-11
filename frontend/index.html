@@ -172,12 +172,17 @@
         <div class="card card-stat">
           <div class="card-stat-label"><i class="fa-solid fa-circle-dollar-to-slot t-sucesso"></i> Faturamento</div>
           <div class="card-stat-value t-20" id="faturamentoTotal">R$ 0,00</div>
-          <div class="card-stat-sub">O.S. concluídas</div>
+          <div class="card-stat-sub">receitas recebidas</div>
         </div>
       </div>
       <div class="charts-grid">
-        <div class="chart-card"><h4>O.S. por mês</h4><canvas id="graficoPedidos"></canvas></div>
-        <div class="chart-card"><h4>Faturamento mensal (R$)</h4><canvas id="graficoFaturamento"></canvas></div>
+        <!-- Os ids eram graficoPedidos/graficoFaturamento, herdados de
+             quando os gráficos mostravam outra coisa. Os títulos ficaram
+             descrevendo o conteúdo antigo enquanto o JS já desenhava
+             outro: o quadro "O.S. por mês" exibia faturamento e o
+             "Faturamento mensal" exibia nomes de clientes. -->
+        <div class="chart-card"><h4>Faturamento mensal (R$)</h4><canvas id="graficoFaturamentoMensal"></canvas></div>
+        <div class="chart-card"><h4>Top 5 clientes (R$)</h4><canvas id="graficoTopClientes"></canvas></div>
       </div>
     </section>
 

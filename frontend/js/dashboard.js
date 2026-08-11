@@ -6,8 +6,8 @@
 // nunca entravam na conta). Agora tudo vem pronto de /api/dashboard,
 // que já soma Pedidos + O.S. corretamente (ver relatorios.service.js).
 
-let graficoPedidosChart = null;
-let graficoFaturamentoChart = null;
+let graficoFaturamentoMensalChart = null;
+let graficoTopClientesChart = null;
 
 async function atualizarDashboard() {
     let dados;
@@ -71,7 +71,7 @@ function _renderizarAlertasDashboard(alertas) {
 // Gráfico de linha: faturamento mensal (receitas pagas, somando
 // Pedidos + O.S.), vindos prontos de /api/dashboard.
 function _graficoFaturamentoMensal(serieMensal) {
-    const canvas = document.getElementById('graficoPedidos');
+    const canvas = document.getElementById('graficoFaturamentoMensal');
     if (!canvas) return;
 
     const labels = (serieMensal || []).map(m => {
@@ -81,8 +81,8 @@ function _graficoFaturamentoMensal(serieMensal) {
     });
     const valores = (serieMensal || []).map(m => m.total);
 
-    if (graficoPedidosChart) graficoPedidosChart.destroy();
-    graficoPedidosChart = new Chart(canvas, {
+    if (graficoFaturamentoMensalChart) graficoFaturamentoMensalChart.destroy();
+    graficoFaturamentoMensalChart = new Chart(canvas, {
         type: 'line',
         data: {
             labels,
@@ -111,14 +111,14 @@ function _graficoFaturamentoMensal(serieMensal) {
 // Gráfico de barras: top clientes por valor comprado (Pedidos entregues
 // + O.S. concluídas), também vindo pronto da API.
 function _graficoTopClientes(topClientes) {
-    const canvas = document.getElementById('graficoFaturamento');
+    const canvas = document.getElementById('graficoTopClientes');
     if (!canvas) return;
 
     const labels = (topClientes || []).map(c => c.nome);
     const valores = (topClientes || []).map(c => c.total);
 
-    if (graficoFaturamentoChart) graficoFaturamentoChart.destroy();
-    graficoFaturamentoChart = new Chart(canvas, {
+    if (graficoTopClientesChart) graficoTopClientesChart.destroy();
+    graficoTopClientesChart = new Chart(canvas, {
         type: 'bar',
         data: {
             labels,
