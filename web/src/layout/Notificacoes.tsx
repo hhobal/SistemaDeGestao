@@ -8,7 +8,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { api } from '../lib/api';
+import { api } from '@/comum/api';
 
 type Alertas = {
   estoqueCritico: { id: number; nome: string; estoque: number }[];

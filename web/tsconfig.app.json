@@ -16,6 +16,11 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
+    /* O mesmo apelido declarado no vite.config.ts. Sem "baseUrl" — que
+       o TypeScript 7 remove —, os caminhos já resolvem a partir da
+       pasta deste próprio arquivo. */
+    "paths": { "@/*": ["./src/*"] },
+
     /* Linting */
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -23,5 +28,5 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": ["src"],
-  "exclude": ["src/tests"]
+  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx", "src/tests"]
 }

@@ -7,7 +7,7 @@
 // consistente — sem cada página precisar tratar isso.
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { api, aoExpirarSessao, gravarSessao, lerSessao, limparSessao, type Sessao } from '../lib/api';
+import { api, aoExpirarSessao, gravarSessao, lerSessao, limparSessao, type Sessao } from '@/comum/api';
 
 type Perfil = Sessao['usuario']['perfil'];
 

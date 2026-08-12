@@ -25,18 +25,19 @@ gera o lançamento financeiro correspondente — em uma única transação.
 
 ## Stack
 
-| Camada       | Tecnologias                                              |
-|--------------|----------------------------------------------------------|
-| Front-end    | HTML5, CSS3, JavaScript (ES6+) — sem framework, sem build |
-| Back-end     | Node.js, Express 4                                        |
-| Banco        | PostgreSQL em todos os ambientes (Supabase em produção)   |
-| ORM          | Prisma 5                                                  |
-| Autenticação | JWT (`jsonwebtoken`) + bcrypt                             |
-| Validação    | Zod                                                       |
-| Segurança    | Helmet, CORS configurável, rate limiting, escape de HTML  |
-| Testes       | Vitest, Supertest                                         |
-| CI           | GitHub Actions                                            |
-| Deploy       | Vercel (front-end) · Render (API) · Supabase (PostgreSQL) |
+| Camada       | Tecnologias                                                |
+|--------------|------------------------------------------------------------|
+| Front-end    | React 19, TypeScript, Vite, Tailwind 4                      |
+| Dados no cliente | TanStack Query · React Hook Form · Zod                  |
+| Back-end     | Node.js, Express 4                                          |
+| Banco        | PostgreSQL em todos os ambientes (Supabase em produção)     |
+| ORM          | Prisma 5                                                    |
+| Autenticação | JWT (`jsonwebtoken`) + bcrypt                               |
+| Validação    | Zod nas duas pontas                                         |
+| Segurança    | Helmet, CORS com curinga, rate limiting, escape por padrão  |
+| Testes       | Vitest, Supertest, Testing Library                          |
+| CI           | GitHub Actions                                              |
+| Deploy       | Vercel (interface) · Render (API) · Supabase (PostgreSQL)   |
 
 ## Arquitetura
 
@@ -59,51 +60,36 @@ lib/prisma.js    acesso ao banco
 
 ```
 .
-├── frontend/              Aplicação estática (deploy na Vercel)
-│   ├── index.html           painel administrativo
-│   ├── login.html           autenticação da equipe
-│   ├── loja.html            catálogo público + carrinho
-│   ├── loja-conta.html      área do cliente
-│   ├── css/
-│   │   ├── style.css        painel administrativo
-│   │   └── loja.css         loja virtual
-│   └── js/
-│       ├── config.js        detecta o ambiente e define a URL da API
-│       ├── api.js           cliente HTTP do painel
-│       ├── loja-api.js      cliente HTTP da loja
-│       ├── *.js             um módulo por área do painel
-│       └── loja/            módulos da loja virtual
-│           ├── estado.js      estado compartilhado entre os módulos
-│           ├── ui.js          formatação, ícones e notificações
-│           ├── sessao.js      sessão do cliente
-│           ├── carrinho.js    carrinho e painéis laterais
-│           ├── favoritos.js   favoritos
-│           ├── catalogo.js    vitrine, filtros e ordenação
-│           ├── quickview.js   visualização rápida do produto
-│           ├── checkout.js    checkout em 3 etapas
-│           └── init.js        inicialização da página
+├── web/                  Interface React (deploy na Vercel)
+│   └── src/
+│       ├── comum/          cliente HTTP, tipos e componentes de tela
+│       ├── auth/           sessão, guarda de rota e login
+│       ├── tema/           alternância claro/escuro
+│       ├── layout/         casca do painel e notificações
+│       ├── modulos/        uma pasta por área: dados + tela + teste
+│       └── loja/           catálogo, carrinho e conta do cliente
 │
 ├── backend/              API REST (deploy no Render)
 │   ├── src/
-│   │   ├── app.js           montagem do Express
-│   │   ├── server.js        ponto de entrada + shutdown gracioso
-│   │   ├── config/          leitura centralizada do .env
-│   │   ├── routes/          16 módulos · 78 endpoints
-│   │   ├── controllers/
-│   │   ├── services/        regra de negócio e transações
-│   │   ├── middleware/      auth · validate · errorHandler
-│   │   └── utils/           jwt · senha · paginação · numeração
+│   │   ├── app.js          montagem do Express
+│   │   ├── server.js       ponto de entrada + shutdown gracioso
+│   │   ├── config/         .env e origens autorizadas
+│   │   ├── routes/         16 módulos · 78 endpoints
+│   │   ├── controllers/    traduz HTTP ↔ domínio
+│   │   ├── services/       regra de negócio e transações
+│   │   ├── middleware/     auth · validate · rateLimit · errorHandler
+│   │   └── utils/          jwt · senha · paginação · numeração
 │   ├── prisma/
-│   │   ├── schema.prisma    16 models
+│   │   ├── schema.prisma   16 models
 │   │   ├── migrations/
-│   │   └── seed.js
-│   └── tests/               48 testes (Vitest + Supertest)
-│       ├── helpers/           fábricas e limpeza de banco
-│       ├── setup.js           ambiente isolado de teste
-│       └── global-setup.js    cria o banco da suíte
+│   │   ├── seed.js         usuário administrador inicial
+│   │   └── seed-demo.js    12 meses de dados de demonstração
+│   └── tests/              62 testes
 │
 ├── .github/workflows/    CI no GitHub Actions
-└── docs/                 Documentação técnica
+├── docker-compose.yml    PostgreSQL descartável para os testes
+├── render.yaml           infraestrutura da API como código
+└── docs/DEPLOY.md        publicação nos três serviços
 ```
 
 ## Decisões técnicas
@@ -135,13 +121,20 @@ representa decimais exatamente: somar mil vendas de R$ 12,10 dá
 contas usam `.mul()`/`.add()` em vez de `*` e `+`, que voltariam a
 converter para float. Há testes cobrindo exatamente esses casos.
 
-**Escape de HTML por padrão no front-end.** Qualquer visitante cria conta
-na loja escolhendo o próprio nome, e esse nome é exibido no painel
-administrativo. Interpolar direto em `innerHTML` executaria o que o
-visitante escrevesse — com a sessão do administrador. O
-`html` de `js/seguranca.js` é um *tagged template* que escapa toda
-interpolação; inserir HTML exige marcação explícita. Se alguém esquecer,
-o texto aparece escapado na tela em vez de abrir um buraco silencioso.
+**Tema em uma lista só de cores.** Os componentes referenciam nomes
+(`--color-fundo`, `--color-texto`), e cada tema atribui outros valores
+aos mesmos nomes — nenhuma tela sabe qual está ativo. Manter duas listas
+de cores em paralelo é o que fazia o tema claro da versão anterior
+quebrar: bastava uma sair de sincronia para aparecer texto escuro sobre
+fundo escuro. Um teste compara os dois blocos e falha se algum token
+ficar sem versão clara.
+
+**Interface organizada por módulo, não por tipo de arquivo.** A divisão
+inicial agrupava telas em `paginas/` e componentes em `componentes/`,
+então cada tela buscava seus próprios dados numa pasta irmã — mexer em
+Pedidos significava abrir três pastas diferentes. Hoje `modulos/pedidos/`
+contém as requisições, os componentes e o teste do módulo. Um import de
+um módulo dentro de outro passa a ser um sinal visível de acoplamento.
 
 **Identificação do cliente atrás de proxy.** A requisição atravessa
 Cloudflare e o balanceador do Render, deixando três endereços em
@@ -176,36 +169,37 @@ npm run seed
 # 4. Subir a API — http://localhost:3001
 npm run dev
 
-# 5. Em outro terminal, servir o front-end — http://localhost:5500
-npm run dev:front
+# 5. Em outro terminal, a interface — http://localhost:5173
+npm run dev:web
 ```
 
-Acesse `http://localhost:5500/login.html` (painel) ou
-`http://localhost:5500/loja.html` (loja). Credenciais padrão do seed:
-`admin` / `admin123`.
+Acesse `http://localhost:5173` (painel) ou `http://localhost:5173/loja`.
+Credenciais do seed: `admin` / `admin123`.
+
+O Vite encaminha `/api` para a porta 3001, então em desenvolvimento o
+navegador vê tudo na mesma origem e não há CORS.
+
+Para popular o sistema com doze meses de dados — clientes, pedidos,
+ordens de serviço e financeiro coerentes entre si — rode
+`npm run seed:demo`. Ele **apaga** os dados transacionais antes de
+recriar o cenário.
 
 Para inspecionar o banco visualmente: `npm run db:studio`.
 
 ## Testes
 
-48 testes cobrindo a regra de negócio crítica, executados com Vitest e
-Supertest sobre um PostgreSQL descartável — o mesmo banco da produção,
-recriado do zero a cada execução.
+**213 testes** — 62 na API, sobre um PostgreSQL descartável recriado do
+zero a cada execução, e 151 na interface, num DOM real com jsdom.
 
 ```bash
-docker compose up -d  # sobe o PostgreSQL de teste (porta 5434)
-npm test              # roda a suíte
-npm run test:coverage # com relatório de cobertura
+docker compose up -d   # PostgreSQL de teste (porta 5434)
+npm test               # roda as duas suítes
 ```
 
-| Suíte                      | Foco                                                    |
-|----------------------------|---------------------------------------------------------|
-| `pedidos.service.test.js`  | checkout transacional, estoque, snapshot de preço, rollback |
-| `auth.test.js`             | login, proteção de rotas, perfis, isolamento de tokens  |
-| `numeracao.test.js`        | numeração sequencial sob concorrência                   |
-| `rateLimit.test.js`        | força bruta no login e identificação do cliente         |
-
-Cobertura de `pedidos.service.js` — o módulo mais crítico — em 100%.
+O foco está nas funções que **decidem alguma coisa** — o que pode ser
+editado, o que já venceu, o que uma mudança de status provoca — e não na
+aparência. Cobertura de `pedidos.service.js`, o módulo mais crítico, em
+100%.
 
 Alguns cenários que a suíte garante:
 
@@ -216,8 +210,15 @@ Alguns cenários que a suíte garante:
 - Alterar o preço de um produto **não reescreve** pedidos já fechados.
 - 20 pedidos criados simultaneamente recebem 20 números distintos, sem
   buracos na sequência.
-- Um token da loja **não abre** rota administrativa.
+- Um token da loja **não abre** rota administrativa, e as duas sessões
+  convivem sem uma derrubar a outra.
 - Usuário desativado após o login perde o acesso na requisição seguinte.
+- O último Administrador ativo não pode ser removido, desativado nem
+  rebaixado.
+
+Regras que existem nos dois lados — no servidor, que recusa, e no
+cliente, que explica antes — têm testes garantindo que as duas versões
+concordam.
 
 > A suíte encontrou um deadlock real durante o desenvolvimento:
 > `registrarLog()` era chamado de dentro da transação usando o client

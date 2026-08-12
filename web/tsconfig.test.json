@@ -15,10 +15,12 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
+    "paths": { "@/*": ["./src/*"] },
+
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src/tests"]
+  "include": ["src/**/*.test.ts", "src/**/*.test.tsx", "src/tests"]
 }

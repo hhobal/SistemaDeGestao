@@ -8,8 +8,8 @@
 
 import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { useAuth } from '../auth/AuthContext';
-import { useTema } from '../tema/TemaContext';
+import { useAuth } from '@/auth/AuthContext';
+import { useTema } from '@/tema/TemaContext';
 import { Notificacoes } from './Notificacoes';
 
 // `somenteAdmin` esconde o item de quem não pode usá-lo. A API já

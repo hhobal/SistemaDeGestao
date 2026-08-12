@@ -1,105 +1,80 @@
 # Guia de Deploy
 
-Arquitetura de produção em três serviços gratuitos:
+Três serviços gratuitos, cada um cuidando de uma camada:
 
 ```
 Navegador
     │
-    ├──► Vercel          frontend/ (HTML, CSS, JS estáticos)
+    ├──► Vercel      web/      interface React (arquivos estáticos)
     │
-    └──► Render          backend/  (API Express + Prisma)
+    └──► Render      backend/  API Express + Prisma
               │
-              └──► Supabase   PostgreSQL
+              └──► Supabase    PostgreSQL
 ```
 
 ---
 
-## 1. Banco de dados — Supabase
+## 1. Banco — Supabase
 
-### 1.1 Pegar as strings de conexão
+### Strings de conexão
 
-No painel do Supabase: **Project Settings → Database → Connection string**.
+No painel: **Connect → ORMs**. São **duas**, e a diferença importa:
 
-Você precisa de **duas** strings diferentes:
+| Variável | Modo | Porta | Usada por |
+|---|---|---|---|
+| `DATABASE_URL` | pooler *transaction* | `6543` | a aplicação |
+| `DIRECT_URL` | pooler *session* | `5432` | as migrations |
 
-| Uso                     | Modo                  | Porta  |
-|-------------------------|-----------------------|--------|
-| `DATABASE_URL`          | Transaction pooler    | `6543` |
-| `DIRECT_URL`            | Direct connection     | `5432` |
+O Render abre e fecha conexões o tempo todo, então a API usa o pooler
+para não estourar o limite do plano gratuito. Já o `prisma migrate`
+precisa de uma sessão real, que o modo *transaction* não oferece.
 
-Por que duas: o Render abre e fecha conexões com frequência, então a API
-usa o **pooler** (porta 6543) para não estourar o limite de conexões do
-plano free. Mas o `prisma migrate` precisa de uma conexão **direta**
-(porta 5432), porque migrations não funcionam através do pooler.
+Acrescente `?pgbouncer=true` na primeira: sem isso o Prisma tenta usar
+*prepared statements*, que o pooler não suporta, e a API falha com
+`prepared statement already exists`.
 
-Na URL do pooler, acrescente `?pgbouncer=true&connection_limit=1`:
-
-```
-DATABASE_URL="postgresql://postgres.xxxx:SENHA@aws-0-ca-central-1.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1"
-DIRECT_URL="postgresql://postgres.xxxx:SENHA@aws-0-ca-central-1.pooler.supabase.com:5432/postgres"
-```
-
-### 1.2 Ajustar o schema do Prisma
-
-Em `backend/prisma/schema.prisma`, troque o bloco `datasource`:
-
-```prisma
-datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
-}
-```
-
-### 1.3 Regerar as migrations
-
-**Atenção:** a migration atual (`20260623152721_inicial`) foi gerada para
-SQLite e **não roda no PostgreSQL** — a sintaxe dos tipos é diferente.
-É preciso gerar uma nova a partir do zero:
+### Criar as tabelas
 
 ```bash
 cd backend
-rm -rf prisma/migrations          # no Windows: Remove-Item -Recurse prisma/migrations
-npx prisma migrate dev --name inicial
-npm run seed
+npx prisma migrate deploy   # aplica as migrations existentes
+npm run seed                # cria o usuário admin
+npm run seed:demo           # opcional: 12 meses de dados de demonstração
 ```
 
-Isso cria as 16 tabelas no Supabase e popula o usuário `admin`.
+> `seed:demo` **apaga** os dados transacionais e recria o cenário do
+> zero. Não rode em um banco com dados que importam.
 
-Confirme no Supabase em **Table Editor** — devem aparecer `usuarios`,
-`clientes`, `produtos`, `pedidos`, etc.
+Confirme no **Table Editor**: devem aparecer `usuarios`, `clientes`,
+`produtos`, `pedidos` e as demais — 16 tabelas.
 
 ---
 
 ## 2. API — Render
 
-### 2.1 Criar o serviço
+**New → Blueprint**, apontando para o repositório. O `render.yaml` na
+raiz descreve o serviço; a plataforma pede apenas os valores sensíveis.
 
-**New → Web Service**, conectando o repositório do GitHub.
+| Campo | Valor |
+|---|---|
+| Root Directory | `backend` |
+| Build | `npm ci && npx prisma generate` |
+| Start | `npx prisma migrate deploy && npm start` |
+| Health Check | `/api/saude` |
 
-| Campo          | Valor                                    |
-|----------------|------------------------------------------|
-| Root Directory | `backend`                                |
-| Runtime        | Node                                     |
-| Build Command  | `npm install && npx prisma generate`     |
-| Start Command  | `npx prisma migrate deploy && npm start` |
-| Health Check   | `/api/saude`                             |
+`migrate deploy` no start mantém o banco na versão certa a cada deploy —
+diferente de `migrate dev`, ele nunca recria nada.
 
-O `migrate deploy` no start garante que o banco esteja na versão certa a
-cada deploy — diferente de `migrate dev`, ele nunca apaga dados.
+### Variáveis
 
-### 2.2 Variáveis de ambiente
-
-Em **Environment**, cadastre:
-
-| Variável            | Valor                                              |
-|---------------------|----------------------------------------------------|
-| `DATABASE_URL`      | string do pooler (porta 6543)                      |
-| `DIRECT_URL`        | string direta (porta 5432)                         |
-| `NODE_ENV`          | `production`                                       |
-| `JWT_SECRET`        | segredo aleatório (**diferente** do local)         |
-| `JWT_LOJA_SECRET`   | outro segredo aleatório                            |
-| `CORS_ORIGINS`      | `https://gestao-livid-three.vercel.app`            |
+| Variável | Valor |
+|---|---|
+| `DATABASE_URL` | string do pooler (6543) |
+| `DIRECT_URL` | string direta (5432) |
+| `NODE_ENV` | `production` |
+| `JWT_SECRET` | segredo aleatório |
+| `JWT_LOJA_SECRET` | outro segredo, diferente do anterior |
+| `CORS_ORIGINS` | `https://seu-dominio.vercel.app` |
 
 Gere cada segredo com:
 
@@ -107,75 +82,117 @@ Gere cada segredo com:
 node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 ```
 
-Nunca reaproveite o segredo do `.env` local em produção — se um vazar,
-o outro continua seguro.
+Use valores diferentes dos locais: se um `.env` vazar, produção
+continua protegida. E os dois JWT precisam ser distintos entre si — é o
+que impede um token de cliente da loja de abrir rota administrativa.
 
-### 2.3 Verificar
+### CORS e domínios de preview
 
-```bash
-curl https://SEU-SERVICO.onrender.com/api/saude
-# {"ok":true,"ambiente":"production","horario":"..."}
+`CORS_ORIGINS` aceita curinga, porque a Vercel cria um endereço novo a
+cada branch:
+
 ```
+https://seu-dominio.vercel.app,https://seu-projeto-*.vercel.app
+```
+
+O `*` cobre só o trecho onde aparece e **não atravessa ponto**, então
+`https://seu-projeto-abc.vercel.app` passa e
+`https://seu-projeto.site-de-terceiro.com` não.
 
 ---
 
-## 3. Front-end — Vercel
+## 3. Interface — Vercel
 
-### 3.1 Apontar para a API publicada
+Em **Settings → Build and Deployment**:
 
-Em `frontend/js/config.js`, ajuste a constante:
+| Campo | Valor |
+|---|---|
+| Framework Preset | **Vite** |
+| **Root Directory** | **`web`** |
+| Build Command | `npm run build` *(detectado)* |
+| Output Directory | `dist` *(detectado)* |
 
-```js
-const API_PRODUCAO = 'https://SEU-SERVICO.onrender.com/api';
-```
+Em **Environment Variables**:
 
-O arquivo detecta o ambiente pelo hostname: em `localhost` usa
-`http://localhost:3001/api`, em qualquer outro domínio usa a URL acima.
+| Nome | Valor |
+|---|---|
+| `VITE_API_URL` | `https://sua-api.onrender.com/api` |
 
-### 3.2 Configuração do projeto
+> Tudo que começa com `VITE_` é embutido no JavaScript e fica visível
+> para qualquer visitante. Endereço de API pode; senha, chave e token
+> nunca. O prefixo é obrigatório — sem ele o Vite não injeta a variável.
 
-O `vercel.json` na raiz já define `outputDirectory: "frontend"`. No painel
-da Vercel, confirme:
+Variável é lida **no momento do build**, não em tempo de execução:
+depois de alterá-la é preciso um novo deploy, sem cache.
 
-| Campo            | Valor      |
-|------------------|------------|
-| Framework Preset | Other      |
-| Root Directory   | `.` (raiz) |
-| Build Command    | *(vazio)*  |
+### O que o `web/vercel.json` faz
 
-Não há build step — o front-end é estático puro.
+O arquivo não aceita comentários — a Vercel valida contra um esquema
+estrito e recusa qualquer propriedade que não conheça, inclusive a
+convenção `"//"` usada em `package.json`. As explicações ficam aqui:
+
+**`rewrites`** — as rotas (`/clientes`, `/loja/carrinho`) existem apenas
+no navegador; quem as resolve é o React Router. Sem o rewrite, abrir ou
+recarregar qualquer endereço que não a raiz devolveria 404.
+
+O padrão exclui `/assets` de propósito: ali estão arquivos reais, e
+devolver o HTML no lugar do JavaScript quebraria a aplicação inteira.
+
+**`headers`** — o Vite põe hash no nome dos arquivos de `assets`, então
+o conteúdo nunca muda sem o nome mudar junto: cache de um ano é seguro.
+Já o `index.html` precisa ser sempre revalidado, senão o navegador serve
+uma página antiga apontando para bundles que já não existem.
 
 ---
 
-## 4. Checklist final
+## 4. Conferir
 
-- [ ] `GET /api/saude` responde na URL do Render
-- [ ] Login com `admin` / `admin123` funciona na Vercel
-- [ ] Console do navegador mostra `[GestãoPro] API: https://...` (não `localhost`)
-- [ ] Nenhum erro de CORS no console
-- [ ] A loja carrega o catálogo e permite finalizar um pedido
-- [ ] O pedido feito na loja aparece no painel
+- [ ] `GET /api/saude` responde com `banco: "ok"`
+- [ ] A tela de login aparece
+- [ ] `admin` / `admin123` entra
+- [ ] O dashboard mostra números, e não zeros
+- [ ] Todas as seções do menu listam dados
+- [ ] A loja (`/loja`) abre sem login
+- [ ] Recarregar em `/clientes` continua funcionando *(testa o rewrite)*
+- [ ] O console do navegador não acusa erro de CORS
 
 ---
 
 ## Problemas comuns
 
-**Erro de CORS no console.**
-O domínio exato da Vercel precisa estar em `CORS_ORIGINS` no Render —
-com `https://`, sem barra no final. A Vercel gera domínios de preview
-diferentes a cada branch; adicione o de produção.
+**Telas vazias, erro de CORS no console.**
+O domínio exato precisa estar em `CORS_ORIGINS` no Render — com
+`https://`, sem barra no final.
 
-**"Não foi possível conectar ao servidor".**
-Ou a URL em `config.js` está errada, ou a API do Render está dormindo.
-No plano free, o serviço hiberna após 15 minutos sem tráfego e leva
-~50 segundos para acordar na primeira requisição.
+**Toda tela em "não foi possível falar com o servidor".**
+Falta `VITE_API_URL`, ou o deploy foi feito antes de ela existir. Sem a
+variável, o aplicativo procura a API no próprio domínio da Vercel.
 
-Para uma demo de portfólio, vale manter a API acordada com um ping
-periódico (UptimeRobot, cron-job.org) em `/api/saude` a cada 10 minutos.
+**A primeira visita demora ~50 segundos.**
+No plano gratuito o Render hiberna após 15 minutos sem tráfego. Um ping
+periódico em `/api/saude` a cada 10 minutos (cron-job.org, UptimeRobot)
+mantém o serviço acordado — e, como esse endpoint consulta o banco, o
+mesmo ping impede o Supabase de pausar o projeto por inatividade.
 
 **`Can't reach database server` no Render.**
-Provavelmente está usando a porta 5432 no `DATABASE_URL`. A API deve usar
-a 6543 (pooler); a 5432 fica só no `DIRECT_URL`.
+Provavelmente há a porta 5432 no `DATABASE_URL`. A aplicação usa a 6543;
+a 5432 fica só no `DIRECT_URL`.
 
-**`prepared statement already exists`.**
-Falta `?pgbouncer=true` no final do `DATABASE_URL`.
+**O build falha com `should NOT have additional property`.**
+Há uma chave desconhecida no `vercel.json`. Comentários não existem em
+JSON.
+
+**O build passa localmente e falha na Vercel.**
+`tsc -b` é incremental e reaproveita cache em `node_modules/.tmp`. Para
+reproduzir o build da plataforma:
+
+```bash
+cd web
+rm -rf node_modules dist
+npm ci && npm run build
+```
+
+**O deploy não dispara ao enviar um commit.**
+A opção *Skip deployments when there are no changes to the root
+directory* atrapalha em monorepo. Desligue-a em Settings → Build and
+Deployment.

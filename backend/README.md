@@ -68,31 +68,21 @@ A API sobe em `http://localhost:3001`. Teste rápido:
 curl http://localhost:3001/api/saude
 ```
 
-### Importante: como abrir o front-end
+### Abrindo a interface
 
-O front-end (pasta `frontend/`: `index.html`, `loja.html` etc.)
-precisa ser **servido por um servidor HTTP local**, não aberto
-diretamente com duplo clique (`file://`) — navegadores bloqueiam esse
-tipo de página de fazer requisições `fetch` para `localhost:3001`.
-
-Formas simples de servir a pasta `frontend/`:
+A interface fica em `../web/` e roda com o servidor de desenvolvimento
+do Vite:
 
 ```bash
-# Opção 1: a partir da raiz do projeto
-npm run dev:front
-
-# Opção 2: extensão "Live Server" do VS Code (botão "Go Live").
-#          O .vscode/settings.json já aponta a raiz para /frontend.
-
-# Opção 3: Python, se já tiver instalado
-cd ../frontend
-python3 -m http.server 5500
-# depois abra http://localhost:5500/login.html
+npm run dev --prefix web      # a partir da raiz do projeto
 ```
 
-Se você usar uma porta diferente de 5500/5501, adicione-a em
-`CORS_ORIGINS` no `.env` deste backend — senão a API vai rejeitar as
-requisições do navegador com erro de CORS.
+O `vite.config.ts` encaminha `/api` para `localhost:3001`, então o
+navegador vê tudo na mesma origem e não há CORS em desenvolvimento.
+Se preferir apontar direto para esta API, crie um `web/.env.local` com
+`VITE_API_URL` — e nesse caso o endereço precisa constar em
+`CORS_ORIGINS` no `.env` daqui, senão o navegador bloqueia as
+requisições.
 
 ---
 
@@ -227,10 +217,7 @@ CRUD simples — ver `src/routes/*.routes.js`.
   falta o botão acionar).
 - **"Esqueci minha senha"** para clientes da loja (hoje não existe nem
   na versão antiga nem nesta API).
-- Ao migrar para o servidor da empresa: trocar `DATABASE_URL` para
-  PostgreSQL, rodar `npx prisma migrate deploy` (em vez de `migrate
-  dev`), e usar um gerenciador de processos como `pm2` para manter a
-  API no ar. Lembre-se também de atualizar `CORS_ORIGINS` no `.env`
-  para o endereço real onde o front-end vai rodar, e
-  a constante `API_PRODUCAO` em `frontend/js/config.js` para a URL
-  pública da API.
+- Publicação: ver `docs/DEPLOY.md`, que cobre Supabase, Render e Vercel.
+  Em resumo, o que muda entre os ambientes são duas variáveis —
+  `CORS_ORIGINS` aqui, autorizando o endereço do front-end, e
+  `VITE_API_URL` na Vercel, apontando para esta API.

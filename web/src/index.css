@@ -3,10 +3,10 @@
 /* ======================================
    TOKENS DE DESIGN
    ======================================
-   As cores vêm da interface atual (frontend/css/style.css) de
-   propósito: a migração troca a tecnologia, não a identidade visual.
-   Assim dá para comparar as duas versões lado a lado e saber que a
-   diferença é de arquitetura, não de gosto.
+   A paleta foi herdada da interface anterior de propósito: a migração
+   trocou a tecnologia, não a identidade visual. Isso permitiu comparar
+   as duas versões lado a lado durante a transição e saber que qualquer
+   diferença era de arquitetura, não de gosto.
 
    No Tailwind 4 a configuração é feita aqui, em CSS, e não mais num
    tailwind.config.js. Cada token vira utilitário automaticamente:

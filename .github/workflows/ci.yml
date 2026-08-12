@@ -7,8 +7,8 @@ on:
     branches: [main, master]
 
 jobs:
-  testes:
-    name: Testes do backend
+  api:
+    name: API
     runs-on: ubuntu-latest
 
     # A suíte roda contra um PostgreSQL de verdade — o mesmo banco usado
@@ -37,11 +37,9 @@ jobs:
       TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5434/gestaopro_test
 
     steps:
-      - name: Baixar o código
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Configurar Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
@@ -55,16 +53,45 @@ jobs:
 
       # Os segredos JWT da suíte são definidos em tests/setup.js, então
       # o CI não precisa de nenhum secret configurado no repositório.
-      - name: Rodar os testes
+      - name: Testes
         run: npm test
 
-      - name: Relatório de cobertura
+      - name: Cobertura
         run: npm run test:coverage
 
-      - name: Publicar cobertura como artefato
+      - uses: actions/upload-artifact@v4
         if: always()
-        uses: actions/upload-artifact@v4
         with:
-          name: cobertura
+          name: cobertura-api
           path: backend/coverage/
           retention-days: 7
+
+  interface:
+    name: Interface
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: web
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Testes
+        run: npm test
+
+      # O build também roda o `tsc -b`. Vale como etapa própria porque o
+      # tsc é incremental: um erro de tipo pode passar despercebido no
+      # ambiente de quem desenvolve e só aparecer numa compilação limpa,
+      # que foi exatamente o que já derrubou um deploy.
+      - name: Build
+        run: npm run build

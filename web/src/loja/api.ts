@@ -9,8 +9,8 @@
 // conta para ver os produtos. Só o checkout exige login.
 
 import { z } from 'zod';
-import { api, gravarSessaoLoja, lerSessaoLoja, limparSessao, query, type SessaoLoja } from '../lib/api';
-import type { Dinheiro } from '../lib/tipos';
+import { api, gravarSessaoLoja, lerSessaoLoja, limparSessao, query, type SessaoLoja } from '@/comum/api';
+import type { Dinheiro } from '@/comum/tipos';
 
 export type ProdutoLoja = {
   id: number;
