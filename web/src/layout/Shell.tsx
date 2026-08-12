@@ -8,26 +8,49 @@
 
 import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
+import {
+  Boxes,
+  CalendarDays,
+  KeyRound,
+  LayoutDashboard,
+  LineChart,
+  ListChecks,
+  LogOut,
+  Menu as MenuIcone,
+  Moon,
+  Package,
+  ShoppingCart,
+  StickyNote,
+  Sun,
+  Truck,
+  Users,
+  Wallet,
+  Wrench
+} from 'lucide-react';
 import { useAuth } from '@/auth/AuthContext';
 import { useTema } from '@/tema/TemaContext';
+import { Marca } from '@/comum/componentes/Marca';
 import { Notificacoes } from './Notificacoes';
 
 // `somenteAdmin` esconde o item de quem não pode usá-lo. A API já
 // recusa (403); tirar do menu evita oferecer um caminho sem saída.
+//
+// O ícone é o componente, não um emoji: emoji é fonte do sistema, muda
+// de desenho entre Windows, Mac e Android, e não aceita a cor do tema.
 const MENU = [
-  { rotulo: 'Dashboard', para: '/', icone: '📊', exato: true },
-  { rotulo: 'Clientes', para: '/clientes', icone: '👥' },
-  { rotulo: 'Fornecedores', para: '/fornecedores', icone: '🚚' },
-  { rotulo: 'Produtos', para: '/produtos', icone: '📦' },
-  { rotulo: 'Estoque', para: '/estoque', icone: '📥' },
-  { rotulo: 'Pedidos', para: '/pedidos', icone: '🛒' },
-  { rotulo: 'Ordens de Serviço', para: '/os', icone: '🔧' },
-  { rotulo: 'Finanças', para: '/financas', icone: '💰' },
-  { rotulo: 'Agenda', para: '/agenda', icone: '📅' },
-  { rotulo: 'Tarefas', para: '/tarefas', icone: '✅' },
-  { rotulo: 'Notas', para: '/notas', icone: '📝' },
-  { rotulo: 'Relatórios', para: '/relatorios', icone: '📈' },
-  { rotulo: 'Usuários', para: '/usuarios', icone: '🔑', somenteAdmin: true }
+  { rotulo: 'Dashboard', para: '/', Icone: LayoutDashboard, exato: true },
+  { rotulo: 'Clientes', para: '/clientes', Icone: Users },
+  { rotulo: 'Fornecedores', para: '/fornecedores', Icone: Truck },
+  { rotulo: 'Produtos', para: '/produtos', Icone: Package },
+  { rotulo: 'Estoque', para: '/estoque', Icone: Boxes },
+  { rotulo: 'Pedidos', para: '/pedidos', Icone: ShoppingCart },
+  { rotulo: 'Ordens de Serviço', para: '/os', Icone: Wrench },
+  { rotulo: 'Finanças', para: '/financas', Icone: Wallet },
+  { rotulo: 'Agenda', para: '/agenda', Icone: CalendarDays },
+  { rotulo: 'Tarefas', para: '/tarefas', Icone: ListChecks },
+  { rotulo: 'Notas', para: '/notas', Icone: StickyNote },
+  { rotulo: 'Relatórios', para: '/relatorios', Icone: LineChart },
+  { rotulo: 'Usuários', para: '/usuarios', Icone: KeyRound, somenteAdmin: true }
 ];
 
 export function Shell() {
@@ -59,9 +82,8 @@ export function Shell() {
           menuAberto ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="flex h-16 items-center gap-2 border-b border-borda px-4">
-          <div className="grid h-8 w-8 place-items-center rounded-lg bg-marca text-sobre-marca">⚙</div>
-          <span className="font-bold">GestãoPro</span>
+        <div className="flex h-16 items-center border-b border-borda px-4">
+          <Marca />
         </div>
 
         <div className="flex items-center gap-3 border-b border-borda px-4 py-3">
@@ -89,7 +111,7 @@ export function Shell() {
                 }`
               }
             >
-              <span aria-hidden>{item.icone}</span>
+              <item.Icone aria-hidden size={17} strokeWidth={1.75} className="shrink-0" />
               {item.rotulo}
             </NavLink>
           ))}
@@ -102,9 +124,9 @@ export function Shell() {
             onClick={() => setMenuAberto(true)}
             aria-label="Abrir menu"
             aria-expanded={menuAberto}
-            className="grid h-9 w-9 place-items-center rounded-lg border border-borda md:hidden"
+            className="grid h-9 w-9 place-items-center rounded-lg border border-borda text-texto-suave transition hover:bg-realce hover:text-texto md:hidden"
           >
-            ☰
+            <MenuIcone aria-hidden size={18} strokeWidth={1.75} />
           </button>
 
           <div className="flex-1" />
@@ -117,13 +139,18 @@ export function Shell() {
             title={tema === 'escuro' ? 'Tema claro' : 'Tema escuro'}
             className="grid h-9 w-9 place-items-center rounded-lg border border-borda text-texto-suave transition hover:bg-realce hover:text-texto"
           >
-            {tema === 'escuro' ? '☀' : '☾'}
+            {tema === 'escuro' ? (
+              <Sun aria-hidden size={18} strokeWidth={1.75} />
+            ) : (
+              <Moon aria-hidden size={18} strokeWidth={1.75} />
+            )}
           </button>
 
           <button
             onClick={sair}
-            className="rounded-lg border border-borda px-3 py-1.5 text-xs text-texto-suave transition hover:bg-realce hover:text-texto"
+            className="flex items-center gap-2 rounded-lg border border-borda px-3 py-1.5 text-xs text-texto-suave transition hover:bg-realce hover:text-texto"
           >
+            <LogOut aria-hidden size={15} strokeWidth={1.75} />
             Sair
           </button>
         </header>

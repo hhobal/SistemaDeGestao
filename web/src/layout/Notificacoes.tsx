@@ -6,6 +6,7 @@
 // segunda versão da verdade, que uma hora divergiria da primeira.
 
 import { useEffect, useRef, useState } from 'react';
+import { Bell } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { api } from '@/comum/api';
@@ -86,7 +87,7 @@ export function Notificacoes() {
         aria-expanded={aberto}
         className="relative grid h-9 w-9 place-items-center rounded-lg border border-borda text-texto-suave transition hover:bg-realce hover:text-texto"
       >
-        🔔
+        <Bell aria-hidden size={18} strokeWidth={1.75} />
         {total > 0 && (
           <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-erro px-1 text-[10px] font-bold text-white">
             {total}

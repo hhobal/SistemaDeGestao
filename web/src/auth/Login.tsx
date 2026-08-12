@@ -3,8 +3,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate, useLocation, Navigate, Link } from 'react-router-dom';
 import { useState } from 'react';
+import { ArrowRight } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import { ErroApi } from '@/comum/api';
+import { Marca } from '@/comum/componentes/Marca';
+import { PreviaLoja } from './PreviaLoja';
 
 // O mesmo formato que o back-end valida em auth.controller.js. Validar
 // nos dois lados evita ida ao servidor para erro óbvio, sem abrir mão
@@ -15,12 +18,6 @@ const esquema = z.object({
 });
 
 type Campos = z.infer<typeof esquema>;
-
-const DESTAQUES = [
-  ['Pedidos e estoque', 'Baixa de estoque e lançamento financeiro na mesma transação.'],
-  ['Ordens de serviço', 'Abertura, andamento e conclusão com receita automática.'],
-  ['Financeiro e relatórios', 'Fluxo de caixa, faturamento mensal e ranking de clientes.']
-];
 
 const CAMPO =
   'w-full rounded-lg border border-borda-clara bg-fundo px-3.5 py-2.5 text-sm outline-none transition ' +
@@ -76,35 +73,21 @@ export function Login() {
         />
 
         <div className="relative">
-          <div className="flex items-center gap-3">
-            <span className="grid h-10 w-10 place-items-center rounded-xl bg-marca text-lg text-sobre-marca">
-              ⚙
-            </span>
-            <span className="text-lg font-bold tracking-tight">GestãoPro</span>
-          </div>
+          <Marca />
 
-          <h2 className="mt-12 max-w-md text-3xl font-bold leading-tight">
+          <h2 className="mt-10 max-w-md text-2xl font-bold leading-tight xl:text-3xl">
             ERP com loja virtual integrada
           </h2>
-          <p className="mt-3 max-w-md text-texto-suave">
+          <p className="mt-2.5 max-w-md text-sm text-texto-suave">
             Um pedido feito na loja aparece no painel, baixa o estoque e gera o
             lançamento financeiro — de uma vez só.
           </p>
+        </div>
 
-          <ul className="mt-10 max-w-md space-y-5">
-            {DESTAQUES.map(([titulo, descricao]) => (
-              <li key={titulo} className="flex gap-3">
-                <span
-                  aria-hidden
-                  className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-marca"
-                />
-                <div>
-                  <p className="font-medium">{titulo}</p>
-                  <p className="text-sm text-texto-suave">{descricao}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
+        {/* A prévia ocupa o lugar que antes era só espaço vazio: mostra o
+            produto em vez de descrevê-lo. */}
+        <div className="relative my-8">
+          <PreviaLoja />
         </div>
 
         <p className="relative text-xs text-texto-fraco">
@@ -116,15 +99,7 @@ export function Login() {
       <main className="flex min-h-dvh items-center justify-center px-6 py-12 lg:min-h-0">
         <div className="w-full max-w-sm">
           {/* Marca compacta, só onde o painel lateral não aparece. */}
-          <div className="mb-10 flex items-center gap-3 lg:hidden">
-            <span className="grid h-10 w-10 place-items-center rounded-xl bg-marca text-lg text-sobre-marca">
-              ⚙
-            </span>
-            <div>
-              <p className="font-bold leading-tight">GestãoPro</p>
-              <p className="text-xs text-texto-suave">ERP com loja virtual</p>
-            </div>
-          </div>
+          <Marca legenda className="mb-10 lg:hidden" />
 
           <h1 className="text-2xl font-bold tracking-tight">Entrar</h1>
           <p className="mt-1 text-sm text-texto-suave">
@@ -219,7 +194,7 @@ export function Login() {
             className="mt-6 inline-flex items-center gap-1.5 text-sm text-texto-suave transition hover:text-marca"
           >
             Ver a loja virtual
-            <span aria-hidden>→</span>
+            <ArrowRight aria-hidden size={15} strokeWidth={2} />
           </Link>
         </div>
       </main>
