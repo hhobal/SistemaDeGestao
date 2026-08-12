@@ -33,6 +33,26 @@ No projeto atual da Vercel, em **Settings → General**:
 O endereço já divulgado continua o mesmo — passa apenas a servir outro
 conteúdo. E, se algo der errado, voltar é reverter esses campos.
 
+### O que o `web/vercel.json` faz
+
+O arquivo é curto e não aceita comentários — a Vercel valida contra um
+esquema estrito e recusa qualquer propriedade que não conheça, incluindo
+a convenção `"//"` usada em `package.json`. As explicações ficam aqui:
+
+**`rewrites`** — as rotas (`/clientes`, `/pedidos`) existem apenas no
+navegador; quem as resolve é o React Router. Sem o rewrite, abrir ou
+recarregar qualquer endereço que não a raiz devolveria 404, porque não
+há arquivo com esse nome no servidor.
+
+O padrão `/((?!assets/).*)` exclui `/assets` de propósito: ali estão
+arquivos reais, e devolver o HTML no lugar do JavaScript quebraria a
+aplicação inteira.
+
+**`headers`** — o Vite põe hash no nome dos arquivos de `assets`, então
+o conteúdo nunca muda sem o nome mudar junto: cache de um ano é seguro.
+Já o `index.html` precisa ser sempre revalidado, senão o navegador serve
+uma página antiga que aponta para bundles que já não existem.
+
 ## 2. Variável de ambiente
 
 Em **Environment Variables**, antes do primeiro deploy:
