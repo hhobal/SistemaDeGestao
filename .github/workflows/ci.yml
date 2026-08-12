@@ -77,9 +77,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Node 24, não 20: o jsdom 30 declara `^22.22.2 || ^24.15.0` e não
+      # roda no 20. O `npm ci` apenas avisa sobre isso, então a quebra só
+      # apareceria depois, ao carregar o jsdom na suíte.
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
           cache-dependency-path: web/package-lock.json
 

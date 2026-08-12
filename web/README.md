@@ -31,6 +31,9 @@ não move risco para lugar nenhum: a API é a mesma, já testada.
 
 ## Rodando
 
+Requer Node.js 22.22+ ou 24.15+ — exigência do jsdom, usado pelos
+testes. O build sozinho roda a partir do Node 20.19.
+
 ```bash
 # 1. A API precisa estar no ar (na raiz do projeto)
 npm run dev            # sobe o Express em http://localhost:3001
