@@ -11,7 +11,7 @@ export function LayoutLoja() {
       <header className="sticky top-0 z-30 border-b border-borda bg-superficie/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
           <Link to="/loja" className="flex shrink-0 items-center gap-2 font-bold">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-marca text-white">⚙</span>
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-marca text-sobre-marca">⚙</span>
             <span className="hidden sm:inline">GestãoPro</span>
           </Link>
 
@@ -31,7 +31,7 @@ export function LayoutLoja() {
           >
             Carrinho
             {quantidade > 0 && (
-              <span className="absolute -right-2 -top-2 grid h-5 min-w-5 place-items-center rounded-full bg-marca px-1 text-[11px] font-bold text-white">
+              <span className="absolute -right-2 -top-2 grid h-5 min-w-5 place-items-center rounded-full bg-marca px-1 text-[11px] font-bold text-sobre-marca">
                 {quantidade}
               </span>
             )}

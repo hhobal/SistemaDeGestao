@@ -1,7 +1,11 @@
 import { z } from 'zod';
 import { api } from '@/comum/api';
 
-export const CORES_NOTA = ['#1e2430', '#2a2035', '#1e2a30', '#302020', '#25302a'] as const;
+// Tons derivados do fundo de cartão da paleta, não cores soltas: a nota
+// precisa se distinguir das vizinhas sem brigar com o resto da tela.
+// Ficam em hex, e não em token, porque a escolha é gravada por nota no
+// banco — o valor precisa sobreviver a uma troca de tema.
+export const CORES_NOTA = ['#232830', '#332a1e', '#1f2b38', '#233029', '#2e2536'] as const;
 
 export type Nota = {
   id: number;

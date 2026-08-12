@@ -72,7 +72,7 @@ export function Catalogo() {
       {aviso && (
         <div
           role="status"
-          className="rounded-lg border border-marca/40 bg-marca/10 px-3 py-2 text-sm text-marca"
+          className="rounded-lg border border-info/40 bg-info/10 px-3 py-2 text-sm text-info"
         >
           {aviso}
         </div>
@@ -155,7 +155,7 @@ function CartaoProduto({
         </div>
         <button
           onClick={() => aoAdicionar(produto)}
-          className="rounded-lg bg-marca px-3 py-2 text-sm font-medium text-white transition hover:bg-marca-escura"
+          className="rounded-lg bg-marca px-3 py-2 text-sm font-medium text-sobre-marca transition hover:bg-marca-escura"
         >
           Adicionar
         </button>

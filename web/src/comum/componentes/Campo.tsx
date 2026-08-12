@@ -7,7 +7,7 @@
 import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes, ReactNode } from 'react';
 
 const BASE =
-  'w-full rounded-lg border border-borda bg-fundo px-3 py-2 text-sm outline-none transition focus:border-marca disabled:opacity-60';
+  'w-full rounded-lg border border-borda-clara bg-fundo px-3 py-2 text-sm outline-none transition focus:border-marca disabled:opacity-60';
 
 function Envolucro({
   id,

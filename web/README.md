@@ -113,7 +113,7 @@ A migração está completa e a versão anterior foi removida: esta é a
 npm test
 ```
 
-151 testes cobrindo o cliente HTTP, as regras de cada módulo e a tela de
+182 testes cobrindo o cliente HTTP, as regras de cada módulo e a tela de
 Clientes renderizada num DOM. Cada arquivo de teste fica ao lado do
 código que exercita, dentro do próprio módulo. O foco está nas funções
 que decidem alguma coisa — o que pode ser editado, o que já venceu, o

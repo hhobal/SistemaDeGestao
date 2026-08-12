@@ -97,7 +97,7 @@ export function Notas() {
             className="flex flex-col rounded-xl border border-borda p-4"
             // A cor vem do banco e é escolhida numa lista fechada no
             // formulário; não há entrada livre de CSS aqui.
-            style={{ backgroundColor: nota.cor ?? '#1e2430' }}
+            style={{ backgroundColor: nota.cor ?? CORES_NOTA[0] }}
           >
             <h2 className="font-semibold">{nota.titulo}</h2>
             <p className="mt-2 flex-1 whitespace-pre-wrap text-sm text-texto-suave">

@@ -193,7 +193,7 @@ function Ranking({
 
 const CORES_STATUS_OS: Record<string, string> = {
   aberta: 'bg-aviso',
-  andamento: 'bg-marca',
+  andamento: 'bg-info',
   concluida: 'bg-ok',
   cancelada: 'bg-erro'
 };

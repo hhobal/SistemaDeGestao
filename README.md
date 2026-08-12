@@ -129,6 +129,14 @@ quebrar: bastava uma sair de sincronia para aparecer texto escuro sobre
 fundo escuro. Um teste compara os dois blocos e falha se algum token
 ficar sem versão clara.
 
+**Contraste medido, não estimado.** Uma paleta pode parecer boa e ser
+ilegível — o âmbar da marca sobre branco dá 4.06:1, abaixo do mínimo do
+WCAG, e olhando não dá para saber. Trinta testes leem as cores do
+`index.css` e calculam a razão de cada par que aparece na tela; foram
+eles que obrigaram a marca a virar bronze no tema claro e o `aviso` a
+sair do amarelo, que estava indistinguível do âmbar. Piorar uma cor
+agora quebra a suíte em vez de chegar em produção.
+
 **Interface organizada por módulo, não por tipo de arquivo.** A divisão
 inicial agrupava telas em `paginas/` e componentes em `componentes/`,
 então cada tela buscava seus próprios dados numa pasta irmã — mexer em
@@ -188,8 +196,8 @@ Para inspecionar o banco visualmente: `npm run db:studio`.
 
 ## Testes
 
-**213 testes** — 62 na API, sobre um PostgreSQL descartável recriado do
-zero a cada execução, e 151 na interface, num DOM real com jsdom.
+**244 testes** — 62 na API, sobre um PostgreSQL descartável recriado do
+zero a cada execução, e 182 na interface, num DOM real com jsdom.
 
 ```bash
 docker compose up -d   # PostgreSQL de teste (porta 5434)

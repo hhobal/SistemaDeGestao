@@ -60,12 +60,12 @@ export function Shell() {
         }`}
       >
         <div className="flex h-16 items-center gap-2 border-b border-borda px-4">
-          <div className="grid h-8 w-8 place-items-center rounded-lg bg-marca text-white">⚙</div>
+          <div className="grid h-8 w-8 place-items-center rounded-lg bg-marca text-sobre-marca">⚙</div>
           <span className="font-bold">GestãoPro</span>
         </div>
 
         <div className="flex items-center gap-3 border-b border-borda px-4 py-3">
-          <div className="grid h-9 w-9 place-items-center rounded-full bg-marca text-xs font-bold text-white">
+          <div className="grid h-9 w-9 place-items-center rounded-full bg-marca text-xs font-bold text-sobre-marca">
             {iniciais}
           </div>
           <div className="min-w-0">

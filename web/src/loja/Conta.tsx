@@ -41,7 +41,7 @@ function Acesso({ aoEntrar }: { aoEntrar: () => void }) {
             key={opcao}
             onClick={() => setModo(opcao)}
             className={`flex-1 rounded px-3 py-1.5 text-sm transition ${
-              modo === opcao ? 'bg-marca text-white' : 'text-texto-suave hover:bg-realce'
+              modo === opcao ? 'bg-marca text-sobre-marca' : 'text-texto-suave hover:bg-realce'
             }`}
           >
             {opcao === 'entrar' ? 'Entrar' : 'Criar conta'}
@@ -111,7 +111,7 @@ function FormEntrar({ aoEntrar }: { aoEntrar: () => void }) {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded-lg bg-marca py-2.5 text-sm font-semibold text-white transition hover:bg-marca-escura disabled:opacity-60"
+        className="w-full rounded-lg bg-marca py-2.5 text-sm font-semibold text-sobre-marca transition hover:bg-marca-escura disabled:opacity-60"
       >
         {isSubmitting ? 'Entrando…' : 'Entrar'}
       </button>
@@ -180,7 +180,7 @@ function FormCadastrar({ aoEntrar }: { aoEntrar: () => void }) {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded-lg bg-marca py-2.5 text-sm font-semibold text-white transition hover:bg-marca-escura disabled:opacity-60"
+        className="w-full rounded-lg bg-marca py-2.5 text-sm font-semibold text-sobre-marca transition hover:bg-marca-escura disabled:opacity-60"
       >
         {isSubmitting ? 'Criando…' : 'Criar conta'}
       </button>
@@ -190,8 +190,8 @@ function FormCadastrar({ aoEntrar }: { aoEntrar: () => void }) {
 
 const CORES_STATUS: Record<string, string> = {
   pendente: 'bg-aviso/15 text-aviso',
-  processando: 'bg-marca/15 text-marca',
-  enviado: 'bg-marca/15 text-marca',
+  processando: 'bg-info/15 text-info',
+  enviado: 'bg-info/15 text-info',
   entregue: 'bg-ok/15 text-ok',
   cancelado: 'bg-erro/15 text-erro'
 };

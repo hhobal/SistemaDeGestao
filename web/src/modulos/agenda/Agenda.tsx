@@ -24,7 +24,7 @@ import {
 } from './api';
 
 const CORES_TIPO: Record<TipoEvento, string> = {
-  reuniao: 'bg-marca/15 text-marca',
+  reuniao: 'bg-info/15 text-info',
   tarefa: 'bg-aviso/15 text-aviso',
   compromisso: 'bg-ok/15 text-ok',
   outro: 'bg-realce text-texto-suave'

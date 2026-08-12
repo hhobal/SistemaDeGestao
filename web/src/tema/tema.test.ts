@@ -50,6 +50,84 @@ describe('paridade entre os temas', () => {
   });
 });
 
+// ─── CONTRASTE ─────────────────────────────
+// Uma paleta pode parecer boa e ser ilegível: âmbar sobre branco tem
+// contraste de 4.06:1, abaixo do mínimo, e ninguém percebe olhando.
+// Estes testes medem, então mexer numa cor e piorar a legibilidade
+// quebra a suíte em vez de chegar em produção.
+
+/** Luminância relativa conforme WCAG 2.1. */
+function luminancia(hex: string) {
+  const canal = (c: number) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255);
+  return 0.2126 * canal(r) + 0.7152 * canal(g) + 0.0722 * canal(b);
+}
+
+function contraste(a: string, b: string) {
+  const [claro, escuro] = [luminancia(a), luminancia(b)].sort((x, y) => y - x);
+  return (claro + 0.05) / (escuro + 0.05);
+}
+
+function coresDe(seletor: string) {
+  const bloco = CSS.split(seletor)[1]?.split('}')[0] ?? '';
+  return Object.fromEntries(
+    [...bloco.matchAll(/(--color-[\w-]+)\s*:\s*(#[0-9a-fA-F]{6})/g)].map(m => [m[1], m[2]])
+  ) as Record<string, string>;
+}
+
+// [frente, fundo, mínimo] — 4.5 para texto, 3 para contorno de campo,
+// que o WCAG 1.4.11 trata como componente de interface e não como texto.
+const PARES: [string, string, number][] = [
+  ['--color-texto', '--color-fundo', 4.5],
+  ['--color-texto', '--color-cartao', 4.5],
+  ['--color-texto', '--color-superficie', 4.5],
+  ['--color-texto-suave', '--color-fundo', 4.5],
+  ['--color-texto-suave', '--color-cartao', 4.5],
+  ['--color-texto-fraco', '--color-fundo', 4.5],
+  // O par que justifica o token: texto claro sobre âmbar reprova, e foi
+  // por isso que `sobre-marca` passou a existir em vez de `text-white`.
+  ['--color-sobre-marca', '--color-marca', 4.5],
+  ['--color-marca', '--color-fundo', 4.5],
+  ['--color-marca', '--color-cartao', 4.5],
+  ['--color-info', '--color-fundo', 4.5],
+  ['--color-ok', '--color-fundo', 4.5],
+  ['--color-erro', '--color-fundo', 4.5],
+  ['--color-aviso', '--color-fundo', 4.5],
+  ['--color-borda-clara', '--color-fundo', 3],
+  ['--color-borda-clara', '--color-cartao', 3]
+];
+
+describe.each([
+  ['escuro', '@theme {'],
+  ['claro', "[data-tema='claro'] {"]
+])('contraste no tema %s', (_nome, seletor) => {
+  const cores = coresDe(seletor);
+
+  it.each(PARES)('%s sobre %s', (frente, fundo, minimo) => {
+    const razao = contraste(cores[frente], cores[fundo]);
+    expect(
+      Number(razao.toFixed(2)),
+      `${frente} (${cores[frente]}) sobre ${fundo} (${cores[fundo]}) dá ${razao.toFixed(2)}:1, mínimo ${minimo}:1`
+    ).toBeGreaterThanOrEqual(minimo);
+  });
+});
+
+describe('separação entre marca e aviso', () => {
+  it('a marca não pode ser confundida com o estado pendente', () => {
+    // As duas são quentes. Se ficarem parecidas demais, um botão vira
+    // etiqueta de status aos olhos de quem usa — foi o risco criado ao
+    // adotar âmbar como marca, e o motivo de `aviso` ter virado laranja.
+    for (const seletor of ['@theme {', "[data-tema='claro'] {"]) {
+      const cores = coresDe(seletor);
+      expect(cores['--color-marca']).not.toBe(cores['--color-aviso']);
+      const distancia = Math.abs(
+        luminancia(cores['--color-marca']) - luminancia(cores['--color-aviso'])
+      );
+      expect(distancia, `marca e aviso quase idênticas em ${seletor}`).toBeGreaterThan(0.03);
+    }
+  });
+});
+
 describe('temaInicial', () => {
   beforeEach(() => {
     localStorage.clear();

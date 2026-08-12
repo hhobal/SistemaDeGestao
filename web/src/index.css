@@ -3,34 +3,61 @@
 /* ======================================
    TOKENS DE DESIGN
    ======================================
-   A paleta foi herdada da interface anterior de propósito: a migração
-   trocou a tecnologia, não a identidade visual. Isso permitiu comparar
-   as duas versões lado a lado durante a transição e saber que qualquer
-   diferença era de arquitetura, não de gosto.
-
    No Tailwind 4 a configuração é feita aqui, em CSS, e não mais num
    tailwind.config.js. Cada token vira utilitário automaticamente:
-   --color-superficie gera bg-superficie, text-superficie, etc. */
+   --color-cartao gera bg-cartao, text-cartao, border-cartao.
+
+   A base é grafite, não preto: #16181d em vez de #0d0f12. Preto puro
+   contra texto claro cria um contraste duro que cansa a vista em tela
+   grande, e não sobra espaço para escurecer nada — sem um degrau
+   abaixo do fundo, sombra e profundidade deixam de existir.
+
+   PAPÉIS DAS CORES
+
+   `marca` é cor de ação: botão, foco, link, item ativo do menu. Só
+   isso. Antes ela também pintava status "em andamento", o que só
+   funcionava porque a marca era azul por coincidência — ao virar
+   âmbar, "processando" ficaria idêntico a "pendente" na mesma coluna.
+   Por isso existe `info`: estado em progresso tem cor própria e não
+   depende de qual é a marca no momento.
+
+   `aviso` é laranja, não amarelo. Amarelo encostaria na marca âmbar e
+   as duas ficariam indistinguíveis — problema que só apareceu depois
+   de medir, porque no papel elas parecem diferentes.
+
+   As duas bordas têm papéis distintos: `borda` separa cartão e linha
+   de tabela, onde contraste baixo é desejável; `borda-clara` desenha o
+   contorno de campo e botão, que precisa ser visível o bastante para
+   dizer onde dá para clicar (WCAG 1.4.11 pede 3:1 para isso).
+
+   Os valores não foram escolhidos no olho: cada par texto/fundo foi
+   medido, e vários caíram abaixo de 4.5:1 na primeira tentativa —
+   principalmente no tema claro, onde âmbar sobre branco não passa e a
+   marca precisou virar bronze. */
 
 @theme {
-  --color-fundo: #0d0f12;
-  --color-superficie: #161a20;
-  --color-cartao: #1e2430;
-  --color-realce: #252d3a;
+  --color-fundo: #16181d;
+  --color-superficie: #1c2027;
+  --color-cartao: #232830;
+  --color-realce: #2b313b;
 
-  --color-texto: #e8eaf0;
-  --color-texto-suave: #8b93a7;
-  --color-texto-fraco: #555e70;
+  --color-texto: #e7e9ee;
+  --color-texto-suave: #969ead;
+  --color-texto-fraco: #818897;
 
-  --color-marca: #4f8ef7;
-  --color-marca-escura: #3a7aee;
+  --color-marca: #e9a13b;
+  --color-marca-escura: #d18d29;
+  /* Texto sobre a marca. Em fundo âmbar, branco tem contraste baixo
+     demais para texto pequeno; o quase-preto passa em AA com folga. */
+  --color-sobre-marca: #17150f;
 
+  --color-info: #5b91f5;
   --color-ok: #34d399;
   --color-erro: #f87171;
-  --color-aviso: #fbbf24;
+  --color-aviso: #f2914a;
 
-  --color-borda: #2a3040;
-  --color-borda-clara: #323c50;
+  --color-borda: #333a46;
+  --color-borda-clara: #6b7688;
 
   --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
 
@@ -46,27 +73,31 @@
    cores em paralelo, e bastava uma sair do lugar para aparecer texto
    escuro sobre fundo escuro.
 
-   As cores de estado (ok, erro, aviso) escurecem no tema claro: o
-   verde e o amarelo do tema escuro somem sobre fundo branco. */
+   As cores acentuadas escurecem no tema claro: o mesmo âmbar que
+   funciona sobre grafite vira ilegível sobre branco. Aqui a marca fica
+   quase marrom e o texto sobre ela passa a ser claro — invertendo o
+   par em relação ao tema escuro. */
 [data-tema='claro'] {
-  --color-fundo: #f4f6fa;
+  --color-fundo: #f4f5f7;
   --color-superficie: #ffffff;
   --color-cartao: #ffffff;
-  --color-realce: #eef1f7;
+  --color-realce: #eceef2;
 
-  --color-texto: #1a2035;
-  --color-texto-suave: #5a6480;
-  --color-texto-fraco: #8a93aa;
+  --color-texto: #1b1f27;
+  --color-texto-suave: #5b6472;
+  --color-texto-fraco: #666e7b;
 
-  --color-marca: #2563eb;
-  --color-marca-escura: #1d4ed8;
+  --color-marca: #9d6109;
+  --color-marca-escura: #8a5300;
+  --color-sobre-marca: #fff8ee;
 
-  --color-ok: #0f9d63;
-  --color-erro: #dc2626;
-  --color-aviso: #b45309;
+  --color-info: #1d4ed8;
+  --color-ok: #047857;
+  --color-erro: #c81e1e;
+  --color-aviso: #9a3412;
 
-  --color-borda: #dde3ed;
-  --color-borda-clara: #c8d1e0;
+  --color-borda: #dde0e6;
+  --color-borda-clara: #828d9c;
 }
 
 @layer base {
@@ -79,4 +110,27 @@
   ::-webkit-scrollbar { width: 9px; height: 9px; }
   ::-webkit-scrollbar-thumb { background: var(--color-borda); border-radius: 99px; }
   ::-webkit-scrollbar-thumb:hover { background: var(--color-borda-clara); }
+
+  /* ─── PREENCHIMENTO AUTOMÁTICO ───────────
+     O Chrome pinta o campo preenchido com uma cor própria — aquele
+     amarelo que aparece sobre tema escuro — e ignora o `background`
+     declarado, porque usa uma camada interna do motor. A saída é uma
+     sombra interna maior que o campo, que cobre essa camada.
+
+     Em vez de apagar o efeito, ele fica intencional: um véu da cor da
+     marca. Assim o campo preenchido continua se anunciando, mas dentro
+     da paleta e igual nos dois temas. */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  select:-webkit-autofill,
+  textarea:-webkit-autofill {
+    -webkit-text-fill-color: var(--color-texto);
+    -webkit-box-shadow: 0 0 0 1000px color-mix(in srgb, var(--color-marca) 14%, var(--color-fundo)) inset;
+    caret-color: var(--color-texto);
+    border-color: color-mix(in srgb, var(--color-marca) 45%, transparent);
+    /* O Chrome anima a volta da própria cor quando o campo perde o
+       foco; o atraso absurdo impede que ela reapareça. */
+    transition: background-color 5000s ease-in-out 0s;
+  }
 }

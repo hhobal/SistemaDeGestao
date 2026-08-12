@@ -29,7 +29,7 @@ export function Carrinho() {
         <p className="text-sm text-texto-suave">Seu carrinho está vazio.</p>
         <Link
           to="/loja"
-          className="mt-4 inline-block rounded-lg bg-marca px-4 py-2 text-sm font-medium text-white transition hover:bg-marca-escura"
+          className="mt-4 inline-block rounded-lg bg-marca px-4 py-2 text-sm font-medium text-sobre-marca transition hover:bg-marca-escura"
         >
           Ver produtos
         </Link>
@@ -139,7 +139,7 @@ function Checkout({
         </p>
         <Link
           to="/loja/conta"
-          className="mt-4 block rounded-lg bg-marca px-4 py-2 text-center text-sm font-medium text-white transition hover:bg-marca-escura"
+          className="mt-4 block rounded-lg bg-marca px-4 py-2 text-center text-sm font-medium text-sobre-marca transition hover:bg-marca-escura"
         >
           Entrar ou criar conta
         </Link>
@@ -241,7 +241,7 @@ function Checkout({
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full rounded-lg bg-marca py-2.5 text-sm font-semibold text-white transition hover:bg-marca-escura disabled:opacity-60"
+          className="w-full rounded-lg bg-marca py-2.5 text-sm font-semibold text-sobre-marca transition hover:bg-marca-escura disabled:opacity-60"
         >
           {isSubmitting ? 'Enviando…' : 'Concluir pedido'}
         </button>
@@ -271,7 +271,7 @@ function Sucesso({ pedido }: { pedido: PedidoLoja }) {
       <div className="mt-6 flex justify-center gap-2">
         <Link
           to="/loja/conta"
-          className="rounded-lg bg-marca px-4 py-2 text-sm font-medium text-white transition hover:bg-marca-escura"
+          className="rounded-lg bg-marca px-4 py-2 text-sm font-medium text-sobre-marca transition hover:bg-marca-escura"
         >
           Ver meus pedidos
         </Link>

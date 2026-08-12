@@ -2,8 +2,8 @@ import { ROTULO_STATUS, type StatusPedido } from './api';
 
 const CORES: Record<StatusPedido, string> = {
   pendente: 'bg-aviso/15 text-aviso',
-  processando: 'bg-marca/15 text-marca',
-  enviado: 'bg-marca/15 text-marca',
+  processando: 'bg-info/15 text-info',
+  enviado: 'bg-info/15 text-info',
   entregue: 'bg-ok/15 text-ok',
   cancelado: 'bg-erro/15 text-erro'
 };

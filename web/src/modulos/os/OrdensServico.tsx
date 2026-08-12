@@ -31,7 +31,7 @@ import {
 
 const CORES_STATUS: Record<StatusOS, string> = {
   aberta: 'bg-aviso/15 text-aviso',
-  andamento: 'bg-marca/15 text-marca',
+  andamento: 'bg-info/15 text-info',
   concluida: 'bg-ok/15 text-ok',
   cancelada: 'bg-erro/15 text-erro'
 };

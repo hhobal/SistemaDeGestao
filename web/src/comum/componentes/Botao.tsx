@@ -5,7 +5,7 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const VARIANTES = {
-  primario: 'bg-marca text-white hover:bg-marca-escura',
+  primario: 'bg-marca text-sobre-marca hover:bg-marca-escura',
   secundario: 'border border-borda text-texto-suave hover:bg-realce hover:text-texto',
   perigo: 'bg-erro text-white hover:opacity-90'
 } as const;
