@@ -30,7 +30,21 @@ export class ErroApi extends Error {
 // a origem relativa basta. Em produção a API vive em outro domínio.
 const BASE = import.meta.env.VITE_API_URL ?? '/api';
 
-const CHAVE_SESSAO = 'gestaopro_sessao';
+// ─── ESCOPOS DE AUTENTICAÇÃO ────────────────────────────
+// O sistema tem dois públicos com credenciais independentes, e o
+// servidor assina os tokens com segredos diferentes (JWT_SECRET e
+// JWT_LOJA_SECRET). Um token de cliente não abre rota administrativa
+// nem o contrário — verificado: devolve 401.
+//
+// Guardar as duas sessões em chaves separadas mantém essa divisão no
+// navegador: dá para estar logado como lojista numa aba e como cliente
+// na loja, sem uma sessão derrubar a outra.
+export type Escopo = 'painel' | 'loja';
+
+const CHAVE_SESSAO: Record<Escopo, string> = {
+  painel: 'gestaopro_sessao',
+  loja: 'gestaopro_sessao_loja'
+};
 
 export type Sessao = {
   token: string;
@@ -43,27 +57,45 @@ export type Sessao = {
   };
 };
 
-export function lerSessao(): Sessao | null {
+export type SessaoLoja = {
+  token: string;
+  cliente: {
+    id: number;
+    nome: string;
+    email: string | null;
+    telefone: string | null;
+    endereco: string | null;
+  };
+};
+
+function ler<T>(escopo: Escopo): T | null {
   try {
-    const bruto = localStorage.getItem(CHAVE_SESSAO);
-    return bruto ? (JSON.parse(bruto) as Sessao) : null;
+    const bruto = localStorage.getItem(CHAVE_SESSAO[escopo]);
+    return bruto ? (JSON.parse(bruto) as T) : null;
   } catch {
     // localStorage corrompido não deve derrubar a aplicação inteira.
     return null;
   }
 }
 
+export const lerSessao = () => ler<Sessao>('painel');
+export const lerSessaoLoja = () => ler<SessaoLoja>('loja');
+
 export function gravarSessao(sessao: Sessao) {
-  localStorage.setItem(CHAVE_SESSAO, JSON.stringify(sessao));
+  localStorage.setItem(CHAVE_SESSAO.painel, JSON.stringify(sessao));
 }
 
-export function limparSessao() {
-  localStorage.removeItem(CHAVE_SESSAO);
+export function gravarSessaoLoja(sessao: SessaoLoja) {
+  localStorage.setItem(CHAVE_SESSAO.loja, JSON.stringify(sessao));
+}
+
+export function limparSessao(escopo: Escopo = 'painel') {
+  localStorage.removeItem(CHAVE_SESSAO[escopo]);
 }
 
 // Quem quiser reagir à expiração da sessão se inscreve aqui. Evita que
 // este módulo precise conhecer o roteador — ele só avisa que expirou.
-type Ouvinte = () => void;
+type Ouvinte = (escopo: Escopo) => void;
 const ouvintesSessaoExpirada = new Set<Ouvinte>();
 
 export function aoExpirarSessao(ouvinte: Ouvinte): () => void {
@@ -80,17 +112,19 @@ type Opcoes = {
   corpo?: unknown;
   /** Rotas públicas (login, catálogo da loja) não mandam token. */
   semAutenticacao?: boolean;
+  /** Qual sessão usar. Padrão: o painel administrativo. */
+  escopo?: Escopo;
   sinal?: AbortSignal;
 };
 
 export async function requisitar<T>(caminho: string, opcoes: Opcoes = {}): Promise<T> {
-  const { metodo = 'GET', corpo, semAutenticacao, sinal } = opcoes;
+  const { metodo = 'GET', corpo, semAutenticacao, escopo = 'painel', sinal } = opcoes;
 
   const cabecalhos: Record<string, string> = {};
   if (corpo !== undefined) cabecalhos['Content-Type'] = 'application/json';
 
   if (!semAutenticacao) {
-    const token = lerSessao()?.token;
+    const token = escopo === 'loja' ? lerSessaoLoja()?.token : lerSessao()?.token;
     if (token) cabecalhos.Authorization = `Bearer ${token}`;
   }
 
@@ -113,8 +147,10 @@ export async function requisitar<T>(caminho: string, opcoes: Opcoes = {}): Promi
   }
 
   if (resposta.status === 401) {
-    limparSessao();
-    ouvintesSessaoExpirada.forEach(ouvinte => ouvinte());
+    // Derruba só o escopo que falhou: uma sessão de cliente expirada
+    // não deve deslogar o lojista.
+    limparSessao(escopo);
+    ouvintesSessaoExpirada.forEach(ouvinte => ouvinte(escopo));
   }
 
   // 204 (usado nos DELETE) não tem corpo; ler como JSON estouraria.
@@ -157,7 +193,10 @@ export const api = {
     requisitar<T>(caminho, { ...opcoes, metodo: 'GET' }),
   post:   <T>(caminho: string, corpo?: unknown, opcoes?: Omit<Opcoes, 'metodo' | 'corpo'>) =>
     requisitar<T>(caminho, { ...opcoes, metodo: 'POST', corpo }),
-  put:    <T>(caminho: string, corpo?: unknown) => requisitar<T>(caminho, { metodo: 'PUT', corpo }),
-  patch:  <T>(caminho: string, corpo?: unknown) => requisitar<T>(caminho, { metodo: 'PATCH', corpo }),
-  delete: <T>(caminho: string) => requisitar<T>(caminho, { metodo: 'DELETE' })
+  put:    <T>(caminho: string, corpo?: unknown, opcoes?: Omit<Opcoes, 'metodo' | 'corpo'>) =>
+    requisitar<T>(caminho, { ...opcoes, metodo: 'PUT', corpo }),
+  patch:  <T>(caminho: string, corpo?: unknown, opcoes?: Omit<Opcoes, 'metodo' | 'corpo'>) =>
+    requisitar<T>(caminho, { ...opcoes, metodo: 'PATCH', corpo }),
+  delete: <T>(caminho: string, opcoes?: Omit<Opcoes, 'metodo' | 'corpo'>) =>
+    requisitar<T>(caminho, { ...opcoes, metodo: 'DELETE' })
 };

@@ -40,6 +40,14 @@ const inteiro = (min, max) => Math.floor(aleatorio() * (max - min + 1)) + min;
 const escolher = lista => lista[Math.floor(aleatorio() * lista.length)];
 const chance = probabilidade => aleatorio() < probabilidade;
 
+// Remove acentos para montar e-mail. Sem isto, "André Carvalho" gerava
+// "andré.carvalho@email.com" — que o Prisma aceita gravar, mas a
+// validação de e-mail do login rejeita por conter caractere não-ASCII.
+// O resultado era um cliente cadastrado que nunca conseguia entrar.
+function semAcento(texto) {
+  return texto.normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+
 function diasAtras(dias, horaBase = 9) {
   const d = new Date();
   d.setDate(d.getDate() - dias);
@@ -273,11 +281,13 @@ async function main() {
   const senhaCliente = await bcrypt.hash('cliente123', 10);
   await prisma.cliente.createMany({
     data: NOMES.map((nome, i) => {
-      const primeiro = nome.split(' ')[0].toLowerCase();
+      const partes = nome.split(' ');
+      const primeiro = semAcento(partes[0].toLowerCase());
+      const ultimo = semAcento(partes[partes.length - 1].toLowerCase());
       const temConta = i % 3 !== 0; // dois terços criaram login na loja
       return {
         nome,
-        email: `${primeiro}.${nome.split(' ').pop().toLowerCase()}@email.com`,
+        email: `${primeiro}.${ultimo}@email.com`,
         telefone: `(${inteiro(11, 85)}) 9${inteiro(1000, 9999)}-${inteiro(1000, 9999)}`,
         cpf: `${inteiro(100, 999)}.${inteiro(100, 999)}.${inteiro(100, 999)}-${inteiro(10, 99)}`,
         endereco: `${escolher(RUAS)}, ${inteiro(10, 1990)} — ${escolher(CIDADES)}`,

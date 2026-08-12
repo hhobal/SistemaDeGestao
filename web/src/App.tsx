@@ -10,6 +10,11 @@ import { Produtos } from './paginas/Produtos';
 import { Pedidos } from './paginas/Pedidos';
 import { OrdensServico } from './paginas/OrdensServico';
 import { Financas } from './paginas/Financas';
+import { ProvedorCarrinho } from './loja/CarrinhoContext';
+import { LayoutLoja } from './loja/LayoutLoja';
+import { Catalogo } from './paginas/loja/Catalogo';
+import { Carrinho } from './paginas/loja/Carrinho';
+import { Conta } from './paginas/loja/Conta';
 import { ErroApi } from './lib/api';
 
 const clienteQuery = new QueryClient({
@@ -35,6 +40,22 @@ export default function App() {
         <ProvedorAuth>
           <Routes>
             <Route path="/login" element={<Login />} />
+
+            {/* A loja é pública: não fica sob RotaProtegida. Quem chega
+                vê o catálogo sem criar conta; só o checkout exige login,
+                e com credencial de cliente, não de lojista. */}
+            <Route
+              path="/loja"
+              element={
+                <ProvedorCarrinho>
+                  <LayoutLoja />
+                </ProvedorCarrinho>
+              }
+            >
+              <Route index element={<Catalogo />} />
+              <Route path="carrinho" element={<Carrinho />} />
+              <Route path="conta" element={<Conta />} />
+            </Route>
 
             <Route element={<RotaProtegida />}>
               <Route element={<Shell />}>

@@ -30,7 +30,12 @@ export function ProvedorAuth({ children }: { children: ReactNode }) {
     // Uma única inscrição para toda a aplicação: quando qualquer
     // requisição receber 401, o estado local acompanha o storage que o
     // cliente HTTP já limpou.
-    return aoExpirarSessao(() => setSessao(null));
+    //
+    // Reage só ao escopo do painel: a sessão do cliente da loja expira
+    // por conta própria e não deve deslogar o lojista.
+    return aoExpirarSessao(escopo => {
+      if (escopo === 'painel') setSessao(null);
+    });
   }, []);
 
   const valor = useMemo<ContextoAuth>(() => {
