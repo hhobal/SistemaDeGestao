@@ -1,35 +1,37 @@
 # Deploy da interface React (`web/`)
 
-Sobe a nova interface **em paralelo**, sem tocar na que está no ar.
-Ao final você terá:
+**Este documento vale para o momento da troca, não para agora.**
 
-```
-gestao-livid-three.vercel.app   → frontend/  (versão atual, intacta)
-<novo-endereço>.vercel.app      → web/       (React, em construção)
-             ambos consumindo a mesma API no Render
+Enquanto a migração não termina, nada muda na Vercel: o projeto atual
+continua publicando `frontend/`, que é a versão completa — com as 13
+seções do painel e a loja virtual.
+
+Publicar o React pela metade não traria ganho nenhum: ninguém acompanha
+uma migração em andamento, e um portfólio vale pelo estado final. Para
+ver o React durante o desenvolvimento, basta rodá-lo localmente:
+
+```bash
+npm run dev --prefix web -- --host   # acessível também pelo celular na mesma rede
 ```
 
-A troca do endereço principal só acontece quando o React alcançar
-paridade — e é uma mudança de configuração, não de código.
+Quando o React alcançar paridade — todas as seções mais a loja —, a
+troca é uma mudança de configuração no projeto que já existe.
 
 ---
 
-## 1. Criar o projeto na Vercel
+## 1. Apontar o projeto para a nova interface
 
-**Add New → Project** e escolha o repositório `hhobal/SistemaDeGestao`.
-Como ele já está ligado a outro projeto na Vercel, a plataforma permite
-importar o mesmo repositório de novo; o que muda é a pasta.
+No projeto atual da Vercel, em **Settings → General**:
 
-| Campo | Valor |
+| Campo | Trocar para |
 |---|---|
-| Project Name | `gestaopro-web` |
 | Framework Preset | **Vite** |
-| **Root Directory** | **`web`** ← o passo que importa |
+| **Root Directory** | **`web`** |
 | Build Command | `npm run build` *(detectado)* |
 | Output Directory | `dist` *(detectado)* |
 
-Se o Root Directory ficar na raiz, a Vercel tenta construir o projeto
-errado e o deploy falha.
+O endereço já divulgado continua o mesmo — passa apenas a servir outro
+conteúdo. E, se algo der errado, voltar é reverter esses campos.
 
 ## 2. Variável de ambiente
 
@@ -49,64 +51,54 @@ conexão.
 > para qualquer visitante. Endereço de API pode; senha, chave e token
 > nunca.
 
-## 3. Autorizar o novo domínio na API
+## 3. CORS
 
-Este é o passo que costuma ser esquecido, e o sintoma é confuso: a tela
-carrega, mas nenhum dado aparece.
+Como o domínio continua o mesmo, `CORS_ORIGINS` no Render **não precisa
+mudar** — ele já autoriza `https://gestao-livid-three.vercel.app`.
 
-Depois do primeiro deploy, copie o endereço gerado e vá ao **Render →
-gestaopro-api → Environment**. Edite `CORS_ORIGINS` acrescentando o novo
-domínio, separado por vírgula:
-
-```
-https://gestao-livid-three.vercel.app,https://gestaopro-web.vercel.app
-```
-
-O Render reinicia o serviço sozinho ao salvar.
+Confira mesmo assim no **Render → gestaopro-api → Environment**. Se o
+endereço tiver mudado, acrescente o novo separado por vírgula; o Render
+reinicia sozinho ao salvar.
 
 ### Domínios de preview
 
 Cada branch e cada pull request ganham um endereço próprio
-(`gestaopro-web-git-minha-branch-usuario.vercel.app`), e nenhum deles
+(`sistemadegestao-git-minha-branch-usuario.vercel.app`), e nenhum deles
 estaria autorizado. Para cobrir todos de uma vez, `CORS_ORIGINS` aceita
 curinga:
 
 ```
-https://gestao-livid-three.vercel.app,https://gestaopro-web*.vercel.app
+https://gestao-livid-three.vercel.app,https://sistemadegestao-*.vercel.app
 ```
 
 O `*` cobre só o trecho onde aparece e **não atravessa ponto**, então
-`https://gestaopro-web-abc.vercel.app` é aceito e
-`https://gestaopro-web.site-de-terceiro.com` não. Ainda assim, prefira
+`https://sistemadegestao-abc.vercel.app` é aceito e
+`https://sistemadegestao.site-de-terceiro.com` não. Ainda assim, prefira
 prefixos específicos do seu projeto: um curinga largo demais autoriza
 sites que não são seus.
 
 ## 4. Conferir
 
-Abra o endereço novo e verifique, nesta ordem:
+Abra o endereço e verifique, nesta ordem:
 
 - [ ] A tela de login aparece
 - [ ] Entrar com `admin` / `admin123` funciona
 - [ ] O dashboard mostra números, e não zeros
-- [ ] Clientes, Produtos, Pedidos e O.S. listam dados
+- [ ] Todas as seções do menu listam dados
+- [ ] A loja abre sem login
 - [ ] Recarregar a página em `/clientes` continua funcionando *(testa o rewrite de SPA)*
 - [ ] O console do navegador não mostra erro de CORS
 
-Se as telas ficarem vazias com erro de CORS no console, falta o passo 3.
+Se as telas ficarem vazias com erro de CORS no console, o domínio mudou
+e falta autorizá-lo no passo 3.
 
 ---
 
-## Trocar o endereço principal (só no final)
+## Se algo der errado
 
-Quando a migração estiver completa, há duas formas:
+Voltar é reverter o **Root Directory** para `.` em Settings → General e
+disparar um novo deploy. A versão anterior volta ao ar em minutos,
+porque continua no repositório em `frontend/`.
 
-**A — mover o domínio.** No projeto antigo, remova o domínio; no novo,
-adicione. O endereço que você já divulgou continua valendo, agora
-apontando para o React.
-
-**B — apontar a raiz para `web/`.** Mudar o Root Directory do projeto
-original de `.` para `web`. Mais simples, porém perde o histórico de
-deploys da versão anterior.
-
-A opção A é preferível: mantém os dois projetos vivos e permite voltar
-atrás trocando o domínio de volta, sem precisar de novo deploy.
+Só remova a pasta `frontend/` quando o React estiver no ar e conferido
+por alguns dias.
