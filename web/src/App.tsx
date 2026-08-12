@@ -10,6 +10,8 @@ import { Produtos } from './paginas/Produtos';
 import { Pedidos } from './paginas/Pedidos';
 import { OrdensServico } from './paginas/OrdensServico';
 import { Financas } from './paginas/Financas';
+import { Estoque } from './paginas/Estoque';
+import { Usuarios } from './paginas/Usuarios';
 import { ProvedorCarrinho } from './loja/CarrinhoContext';
 import { LayoutLoja } from './loja/LayoutLoja';
 import { Catalogo } from './paginas/loja/Catalogo';
@@ -65,6 +67,8 @@ export default function App() {
                 <Route path="pedidos" element={<Pedidos />} />
                 <Route path="os" element={<OrdensServico />} />
                 <Route path="financas" element={<Financas />} />
+                <Route path="estoque" element={<Estoque />} />
+                <Route path="usuarios" element={<Usuarios />} />
               </Route>
             </Route>
 

@@ -10,18 +10,23 @@ import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 
+// `somenteAdmin` esconde o item de quem não pode usá-lo. A API já
+// recusa (403); tirar do menu evita oferecer um caminho sem saída.
 const MENU = [
   { rotulo: 'Dashboard', para: '/', icone: '📊', exato: true },
   { rotulo: 'Clientes', para: '/clientes', icone: '👥' },
   { rotulo: 'Produtos', para: '/produtos', icone: '📦' },
+  { rotulo: 'Estoque', para: '/estoque', icone: '📥' },
   { rotulo: 'Pedidos', para: '/pedidos', icone: '🛒' },
   { rotulo: 'Ordens de Serviço', para: '/os', icone: '🔧' },
-  { rotulo: 'Finanças', para: '/financas', icone: '💰' }
+  { rotulo: 'Finanças', para: '/financas', icone: '💰' },
+  { rotulo: 'Usuários', para: '/usuarios', icone: '🔑', somenteAdmin: true }
 ];
 
 export function Shell() {
-  const { sessao, sair } = useAuth();
+  const { sessao, sair, temPerfil } = useAuth();
   const [menuAberto, setMenuAberto] = useState(false);
+  const itensVisiveis = MENU.filter(item => !item.somenteAdmin || temPerfil('Administrador'));
 
   const iniciais = (sessao?.usuario.nome ?? '?')
     .split(' ')
@@ -62,7 +67,7 @@ export function Shell() {
         </div>
 
         <nav className="flex-1 overflow-y-auto py-2">
-          {MENU.map(item => (
+          {itensVisiveis.map(item => (
             <NavLink
               key={item.para}
               to={item.para}
