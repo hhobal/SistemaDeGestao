@@ -41,7 +41,11 @@ export function Modal({ aberto, titulo, aoFechar, children, rodape }: Props) {
         // Clique no ::backdrop chega no próprio <dialog>, não no conteúdo.
         if (evento.target === referencia.current) aoFechar();
       }}
-      className="w-[min(32rem,calc(100vw-2rem))] rounded-xl border border-borda bg-cartao p-0 text-texto backdrop:bg-black/60"
+      // m-auto é obrigatório: o navegador centraliza o <dialog> justamente
+      // pela margem automática, e o preflight do Tailwind zera a margem de
+      // todos os elementos. Sem isto, todo modal abre colado no canto
+      // superior esquerdo.
+      className="m-auto max-h-[calc(100dvh-2rem)] w-[min(32rem,calc(100vw-2rem))] overflow-y-auto rounded-xl border border-borda bg-cartao p-0 text-texto backdrop:bg-black/60"
     >
       <div className="flex items-center justify-between border-b border-borda px-5 py-3">
         <h2 className="text-sm font-semibold">{titulo}</h2>

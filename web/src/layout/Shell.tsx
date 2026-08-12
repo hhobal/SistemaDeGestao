@@ -9,6 +9,8 @@
 import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import { useTema } from '../tema/TemaContext';
+import { Notificacoes } from './Notificacoes';
 
 // `somenteAdmin` esconde o item de quem não pode usá-lo. A API já
 // recusa (403); tirar do menu evita oferecer um caminho sem saída.
@@ -30,6 +32,7 @@ const MENU = [
 
 export function Shell() {
   const { sessao, sair, temPerfil } = useAuth();
+  const { tema, alternar } = useTema();
   const [menuAberto, setMenuAberto] = useState(false);
   const itensVisiveis = MENU.filter(item => !item.somenteAdmin || temPerfil('Administrador'));
 
@@ -105,6 +108,17 @@ export function Shell() {
           </button>
 
           <div className="flex-1" />
+
+          <Notificacoes />
+
+          <button
+            onClick={alternar}
+            aria-label={tema === 'escuro' ? 'Mudar para o tema claro' : 'Mudar para o tema escuro'}
+            title={tema === 'escuro' ? 'Tema claro' : 'Tema escuro'}
+            className="grid h-9 w-9 place-items-center rounded-lg border border-borda text-texto-suave transition hover:bg-realce hover:text-texto"
+          >
+            {tema === 'escuro' ? '☀' : '☾'}
+          </button>
 
           <button
             onClick={sair}

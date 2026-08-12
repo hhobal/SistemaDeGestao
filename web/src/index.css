@@ -37,6 +37,38 @@
   --radius-card: 10px;
 }
 
+/* ─── TEMA CLARO ───────────────────────────
+   Só os valores mudam; os nomes são os mesmos. Nenhum componente
+   precisa saber qual tema está ativo — é por isso que a troca não
+   exige tocar em nenhuma tela.
+
+   O tema anterior falhava justamente aqui: mantinha duas listas de
+   cores em paralelo, e bastava uma sair do lugar para aparecer texto
+   escuro sobre fundo escuro.
+
+   As cores de estado (ok, erro, aviso) escurecem no tema claro: o
+   verde e o amarelo do tema escuro somem sobre fundo branco. */
+[data-tema='claro'] {
+  --color-fundo: #f4f6fa;
+  --color-superficie: #ffffff;
+  --color-cartao: #ffffff;
+  --color-realce: #eef1f7;
+
+  --color-texto: #1a2035;
+  --color-texto-suave: #5a6480;
+  --color-texto-fraco: #8a93aa;
+
+  --color-marca: #2563eb;
+  --color-marca-escura: #1d4ed8;
+
+  --color-ok: #0f9d63;
+  --color-erro: #dc2626;
+  --color-aviso: #b45309;
+
+  --color-borda: #dde3ed;
+  --color-borda-clara: #c8d1e0;
+}
+
 @layer base {
   body {
     @apply bg-fundo text-texto font-sans antialiased;

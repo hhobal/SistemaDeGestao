@@ -13,6 +13,26 @@
       rel="stylesheet"
     />
     <title>GestãoPro</title>
+    <script>
+      // Aplica o tema antes de qualquer pixel ser desenhado. Se isto
+      // esperasse o React montar, quem escolheu o tema escuro veria um
+      // clarão branco a cada carregamento.
+      (function () {
+        try {
+          var salvo = localStorage.getItem('gestaopro_tema');
+          var tema =
+            salvo === 'claro' || salvo === 'escuro'
+              ? salvo
+              : window.matchMedia('(prefers-color-scheme: light)').matches
+                ? 'claro'
+                : 'escuro';
+          document.documentElement.dataset.tema = tema;
+          document.documentElement.style.colorScheme = tema === 'claro' ? 'light' : 'dark';
+        } catch (e) {
+          document.documentElement.dataset.tema = 'escuro';
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

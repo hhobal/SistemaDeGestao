@@ -7,7 +7,11 @@ import { formatarMoeda, paraNumero, type Dinheiro } from '../lib/tipos';
 // existir uma segunda versão da verdade.
 type PontoMensal = { mes: string; total: Dinheiro };
 type TopCliente = { id: number; nome: string; total: Dinheiro; compras: number };
-type StatusOS = Record<string, number>;
+// A rota devolve uma lista, não um mapa de status para quantidade.
+// Tratá-la como objeto fazia Object.entries() produzir pares em que o
+// "valor" era o próprio item, e renderizar um objeto como filho derruba
+// a árvore do React — a tela inteira ficava em branco.
+type StatusOS = { status: string; total: number };
 type ProdutoCritico = { id: number; nome: string; estoque: number; estoqueMin: number };
 type MaisVendido = { id: number; nome: string; quantidade: number; total: Dinheiro };
 
@@ -28,7 +32,7 @@ export function Relatorios() {
   });
   const statusOS = useQuery({
     queryKey: ['relatorios', 'status-os'],
-    queryFn: () => api.get<StatusOS>('/relatorios/status-os')
+    queryFn: () => api.get<StatusOS[]>('/relatorios/status-os')
   });
   const criticos = useQuery({
     queryKey: ['relatorios', 'estoque-critico'],
@@ -194,9 +198,10 @@ const CORES_STATUS_OS: Record<string, string> = {
   cancelada: 'bg-erro'
 };
 
-function Distribuicao({ dados }: { dados: StatusOS }) {
-  const entradas = Object.entries(dados);
-  const total = entradas.reduce((soma, [, quantidade]) => soma + quantidade, 0);
+function Distribuicao({ dados }: { dados: StatusOS[] }) {
+  // Status com zero ocorrências some da barra, mas continua na legenda:
+  // saber que não há nenhuma O.S. aberta é informação, não ausência dela.
+  const total = dados.reduce((soma, item) => soma + item.total, 0);
 
   if (total === 0) {
     return <p className="py-6 text-center text-sm text-texto-fraco">Nenhuma O.S. registrada.</p>;
@@ -204,26 +209,30 @@ function Distribuicao({ dados }: { dados: StatusOS }) {
 
   return (
     <div className="space-y-3">
-      <div className="flex h-3 overflow-hidden rounded-full">
-        {entradas.map(([status, quantidade]) => (
-          <div
-            key={status}
-            className={CORES_STATUS_OS[status] ?? 'bg-realce'}
-            style={{ width: `${(quantidade / total) * 100}%` }}
-            title={`${status}: ${quantidade}`}
-          />
-        ))}
+      <div className="flex h-3 overflow-hidden rounded-full bg-realce">
+        {dados
+          .filter(item => item.total > 0)
+          .map(item => (
+            <div
+              key={item.status}
+              className={CORES_STATUS_OS[item.status] ?? 'bg-realce'}
+              style={{ width: `${(item.total / total) * 100}%` }}
+              title={`${item.status}: ${item.total}`}
+            />
+          ))}
       </div>
       <ul className="space-y-1 text-sm">
-        {entradas.map(([status, quantidade]) => (
-          <li key={status} className="flex items-center justify-between gap-3">
+        {dados.map(item => (
+          <li key={item.status} className="flex items-center justify-between gap-3">
             <span className="flex items-center gap-2">
-              <span className={`h-2 w-2 rounded-full ${CORES_STATUS_OS[status] ?? 'bg-realce'}`} />
-              <span className="capitalize">{status}</span>
+              <span className={`h-2 w-2 rounded-full ${CORES_STATUS_OS[item.status] ?? 'bg-realce'}`} />
+              <span className="capitalize">{item.status}</span>
             </span>
             <span className="text-texto-suave">
-              {quantidade}{' '}
-              <span className="text-texto-fraco">({((quantidade / total) * 100).toFixed(0)}%)</span>
+              {item.total}{' '}
+              <span className="text-texto-fraco">
+                ({((item.total / total) * 100).toFixed(0)}%)
+              </span>
             </span>
           </li>
         ))}

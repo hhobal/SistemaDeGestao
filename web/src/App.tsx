@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ProvedorAuth } from './auth/AuthContext';
+import { ProvedorTema } from './tema/TemaContext';
 import { RotaProtegida } from './auth/RotaProtegida';
 import { Shell } from './layout/Shell';
 import { Login } from './paginas/Login';
@@ -44,6 +45,7 @@ export default function App() {
   return (
     <QueryClientProvider client={clienteQuery}>
       <BrowserRouter>
+        <ProvedorTema>
         <ProvedorAuth>
           <Routes>
             <Route path="/login" element={<Login />} />
@@ -85,6 +87,7 @@ export default function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </ProvedorAuth>
+        </ProvedorTema>
       </BrowserRouter>
     </QueryClientProvider>
   );
