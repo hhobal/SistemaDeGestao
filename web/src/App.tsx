@@ -9,6 +9,7 @@ import { Clientes } from './paginas/Clientes';
 import { Produtos } from './paginas/Produtos';
 import { Pedidos } from './paginas/Pedidos';
 import { OrdensServico } from './paginas/OrdensServico';
+import { Financas } from './paginas/Financas';
 import { ErroApi } from './lib/api';
 
 const clienteQuery = new QueryClient({
@@ -42,7 +43,7 @@ export default function App() {
                 <Route path="produtos" element={<Produtos />} />
                 <Route path="pedidos" element={<Pedidos />} />
                 <Route path="os" element={<OrdensServico />} />
-                <Route path="financas" element={<EmBreve titulo="Finanças" />} />
+                <Route path="financas" element={<Financas />} />
               </Route>
             </Route>
 
@@ -54,15 +55,8 @@ export default function App() {
   );
 }
 
-// Placeholder honesto: a rota existe e o menu funciona, mas a tela
-// ainda não foi migrada. Some conforme cada CRUD é implementado.
-function EmBreve({ titulo }: { titulo: string }) {
-  return (
-    <div>
-      <h1 className="text-lg font-semibold">{titulo}</h1>
-      <p className="mt-2 text-sm text-texto-suave">
-        Tela ainda não migrada. Disponível na versão anterior da interface.
-      </p>
-    </div>
-  );
-}
+// O placeholder "EmBreve" foi removido: todas as rotas listadas no menu
+// já apontam para telas reais. As seções ainda não migradas (estoque,
+// agenda, tarefas, notas, usuários, fornecedores e relatórios) entram
+// no menu conforme forem sendo implementadas — oferecer um link que só
+// avisa "ainda não pronto" seria pior que não oferecer o link.
