@@ -15,11 +15,16 @@ import { useAuth } from '../auth/AuthContext';
 const MENU = [
   { rotulo: 'Dashboard', para: '/', icone: '📊', exato: true },
   { rotulo: 'Clientes', para: '/clientes', icone: '👥' },
+  { rotulo: 'Fornecedores', para: '/fornecedores', icone: '🚚' },
   { rotulo: 'Produtos', para: '/produtos', icone: '📦' },
   { rotulo: 'Estoque', para: '/estoque', icone: '📥' },
   { rotulo: 'Pedidos', para: '/pedidos', icone: '🛒' },
   { rotulo: 'Ordens de Serviço', para: '/os', icone: '🔧' },
   { rotulo: 'Finanças', para: '/financas', icone: '💰' },
+  { rotulo: 'Agenda', para: '/agenda', icone: '📅' },
+  { rotulo: 'Tarefas', para: '/tarefas', icone: '✅' },
+  { rotulo: 'Notas', para: '/notas', icone: '📝' },
+  { rotulo: 'Relatórios', para: '/relatorios', icone: '📈' },
   { rotulo: 'Usuários', para: '/usuarios', icone: '🔑', somenteAdmin: true }
 ];
 

@@ -12,6 +12,11 @@ import { OrdensServico } from './paginas/OrdensServico';
 import { Financas } from './paginas/Financas';
 import { Estoque } from './paginas/Estoque';
 import { Usuarios } from './paginas/Usuarios';
+import { Fornecedores } from './paginas/Fornecedores';
+import { Agenda } from './paginas/Agenda';
+import { Tarefas } from './paginas/Tarefas';
+import { Notas } from './paginas/Notas';
+import { Relatorios } from './paginas/Relatorios';
 import { ProvedorCarrinho } from './loja/CarrinhoContext';
 import { LayoutLoja } from './loja/LayoutLoja';
 import { Catalogo } from './paginas/loja/Catalogo';
@@ -68,6 +73,11 @@ export default function App() {
                 <Route path="os" element={<OrdensServico />} />
                 <Route path="financas" element={<Financas />} />
                 <Route path="estoque" element={<Estoque />} />
+                <Route path="fornecedores" element={<Fornecedores />} />
+                <Route path="agenda" element={<Agenda />} />
+                <Route path="tarefas" element={<Tarefas />} />
+                <Route path="notas" element={<Notas />} />
+                <Route path="relatorios" element={<Relatorios />} />
                 <Route path="usuarios" element={<Usuarios />} />
               </Route>
             </Route>

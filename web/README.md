@@ -64,18 +64,29 @@ O ponto central é `lib/api.ts`: toda chamada passa por ali, então anexar
 o token e derrubar a sessão expirada acontece uma vez, e não em cada
 tela.
 
-## Estado da migração
+## Telas
 
-| Tela               | Situação   |
-|--------------------|------------|
-| Login              | migrada    |
-| Dashboard          | migrada    |
-| Clientes           | pendente   |
-| Produtos           | pendente   |
-| Pedidos            | pendente   |
-| Ordens de Serviço  | pendente   |
-| Finanças           | pendente   |
-| Loja virtual       | pendente   |
+**Painel** — login, dashboard, clientes, fornecedores, produtos, estoque,
+pedidos, ordens de serviço, finanças, agenda, tarefas, notas, relatórios
+e usuários.
 
-Enquanto houver telas pendentes, a interface anterior segue publicada e
-funcional — a migração não derruba nada que já funciona.
+**Loja** — catálogo público, carrinho, checkout e área do cliente.
+
+A migração está completa: todas as seções da interface anterior existem
+aqui. A versão em `../frontend/` continua no repositório até a troca do
+domínio ser confirmada em produção (ver `docs/DEPLOY-WEB.md`).
+
+## Testes
+
+```bash
+npm test
+```
+
+145 testes cobrindo o cliente HTTP, as regras de cada módulo e a tela de
+Clientes renderizada num DOM. O foco está nas funções que decidem
+alguma coisa — o que pode ser editado, o que já venceu, o que a
+mudança de status provoca — e não na aparência.
+
+As mesmas regras existem no servidor, que é quem de fato recusa. As
+daqui servem para explicar o motivo antes da tentativa, e os testes
+garantem que as duas versões concordam.
