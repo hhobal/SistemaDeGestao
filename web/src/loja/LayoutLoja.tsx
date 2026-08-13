@@ -15,10 +15,8 @@ export function LayoutLoja() {
       <header className="sticky top-0 z-30 border-b border-borda bg-superficie/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
           <Link to="/loja" className="flex shrink-0 items-center gap-2 font-bold">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-marca text-sobre-marca">
-              <Simbolo className="h-4 w-4" />
-            </span>
-            <span className="hidden sm:inline">{NOME_PRODUTO}</span>
+            <Simbolo className="h-8 w-8" estatico />
+            <span className="hidden tracking-[0.12em] sm:inline">{NOME_PRODUTO}</span>
           </Link>
 
           <div className="flex-1" />

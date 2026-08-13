@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import { ErroApi } from '@/comum/api';
-import { Marca } from '@/comum/componentes/Marca';
+import { Logo } from '@/comum/componentes/Marca';
 import { PreviaLoja } from './PreviaLoja';
 
 // O mesmo formato que o back-end valida em auth.controller.js. Validar
@@ -73,9 +73,9 @@ export function Login() {
         />
 
         <div className="relative">
-          <Marca />
+          <Logo largura="max-w-[250px]" />
 
-          <h2 className="mt-10 max-w-md text-2xl font-bold leading-tight xl:text-3xl">
+          <h2 className="mt-8 max-w-md text-2xl font-bold leading-tight xl:text-3xl">
             ERP com loja virtual integrada
           </h2>
           <p className="mt-2.5 max-w-md text-sm text-texto-suave">
@@ -98,8 +98,9 @@ export function Login() {
       {/* ─── FORMULÁRIO ─────────────────────── */}
       <main className="flex min-h-dvh items-center justify-center px-6 py-12 lg:min-h-0">
         <div className="w-full max-w-sm">
-          {/* Marca compacta, só onde o painel lateral não aparece. */}
-          <Marca legenda className="mb-10 lg:hidden" />
+          {/* O logo também aqui, menor, só onde o painel lateral não
+              aparece — senão a tela do celular abriria sem marca. */}
+          <Logo largura="max-w-[180px]" className="mb-10 lg:hidden" />
 
           <h1 className="text-2xl font-bold tracking-tight">Entrar</h1>
           <p className="mt-1 text-sm text-texto-suave">

@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/auth/AuthContext';
 import { useTema } from '@/tema/TemaContext';
-import { Marca } from '@/comum/componentes/Marca';
+import { Simbolo } from '@/comum/componentes/Marca';
 import { Carregando } from '@/comum/componentes/Carregando';
 import { Notificacoes } from './Notificacoes';
 
@@ -83,8 +83,10 @@ export function Shell() {
           menuAberto ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
+        {/* Só o símbolo: a lateral tem 240px e o logo completo, com nome
+            e assinatura, ficaria ilegível nesse tamanho. */}
         <div className="flex h-16 items-center border-b border-borda px-4">
-          <Marca />
+          <Simbolo className="h-10 w-10" />
         </div>
 
         <div className="flex items-center gap-3 border-b border-borda px-4 py-3">
