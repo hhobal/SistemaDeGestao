@@ -110,28 +110,49 @@
    As cores acentuadas escurecem no tema claro: o mesmo âmbar que
    funciona sobre grafite vira ilegível sobre branco. Aqui a marca fica
    quase marrom e o texto sobre ela passa a ser claro — invertendo o
-   par em relação ao tema escuro. */
+   par em relação ao tema escuro.
+
+   BRANCO NÃO É FUNDO, É DESTAQUE
+
+   A primeira versão deste tema era quase toda #ffffff: página, barra
+   lateral e cartão no mesmo branco, separados só por uma borda cinza
+   clara. Passava em contraste e mesmo assim cansava a vista — porque
+   contraste mede texto contra fundo, não o brilho de uma tela inteira
+   estourada, e porque sem degrau entre as camadas o cartão deixava de
+   parecer um cartão.
+
+   A correção é a mesma ideia do tema escuro, invertida: a base não é
+   o extremo da escala. O fundo recua para um cinza levemente azulado,
+   e o branco fica reservado para o que precisa subir — o cartão é a
+   única superfície quase branca, então ele se destaca sozinho, sem
+   depender da borda. Sobra ainda um degrau abaixo do fundo para o
+   realce de hover, que antes era claro demais para se notar.
+
+   Fundo mais escuro derruba o contraste de tudo que é escuro sobre
+   ele, e três cores caíram abaixo do mínimo na primeira medição: a
+   marca, o texto fraco e a borda clara escureceram junto para
+   compensar. */
 [data-tema='claro'] {
-  --color-fundo: #f4f5f7;
-  --color-superficie: #ffffff;
-  --color-cartao: #ffffff;
-  --color-realce: #eceef2;
+  --color-fundo: #e8ebf1;
+  --color-superficie: #f7f8fb;
+  --color-cartao: #fdfdff;
+  --color-realce: #dde2ea;
 
-  --color-texto: #1b1f27;
-  --color-texto-suave: #5b6472;
-  --color-texto-fraco: #666e7b;
+  --color-texto: #1a1f2b;
+  --color-texto-suave: #545d6e;
+  --color-texto-fraco: #5f6877;
 
-  --color-marca: #9d6109;
-  --color-marca-escura: #8a5300;
-  --color-sobre-marca: #fff8ee;
+  --color-marca: #935a06;
+  --color-marca-escura: #7d4c04;
+  --color-sobre-marca: #fff7ec;
 
   --color-info: #1d4ed8;
   --color-ok: #047857;
   --color-erro: #c81e1e;
   --color-aviso: #9a3412;
 
-  --color-borda: #dde0e6;
-  --color-borda-clara: #828d9c;
+  --color-borda: #ccd2dd;
+  --color-borda-clara: #767f8f;
 }
 
 @layer base {

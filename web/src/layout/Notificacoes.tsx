@@ -85,7 +85,7 @@ export function Notificacoes() {
         onClick={() => setAberto(a => !a)}
         aria-label={total > 0 ? `${total} alertas` : 'Sem alertas'}
         aria-expanded={aberto}
-        className="relative grid h-9 w-9 place-items-center rounded-lg border border-borda text-texto-suave transition hover:bg-realce hover:text-texto"
+        className="relative grid h-9 w-9 place-items-center rounded-lg text-texto-suave transition-colors hover:bg-realce hover:text-texto"
       >
         <Bell aria-hidden size={18} strokeWidth={1.75} />
         {total > 0 && (
