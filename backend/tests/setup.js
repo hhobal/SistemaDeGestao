@@ -15,7 +15,7 @@ require('dotenv').config();
 // container descrito em docs/TESTES.md.
 const bancoDeTeste =
   process.env.TEST_DATABASE_URL ||
-  'postgresql://postgres:postgres@localhost:5434/gestaopro_test';
+  'postgresql://postgres:postgres@localhost:5434/gestiq_test';
 
 if (/supabase|amazonaws|render/i.test(bancoDeTeste)) {
   throw new Error(

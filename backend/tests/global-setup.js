@@ -14,7 +14,7 @@ const raizBackend = path.join(__dirname, '..');
 module.exports = async function setup() {
   const url =
     process.env.TEST_DATABASE_URL ||
-    'postgresql://postgres:postgres@localhost:5434/gestaopro_test';
+    'postgresql://postgres:postgres@localhost:5434/gestiq_test';
 
   try {
     // --force-reset derruba e recria o schema: cada execução começa
@@ -30,8 +30,8 @@ module.exports = async function setup() {
       'Não foi possível preparar o banco de teste.\n\n' +
       `URL: ${url}\n\n` +
       'O PostgreSQL de teste está no ar? Suba com:\n' +
-      '  docker run --name gestaopro-test-db -e POSTGRES_PASSWORD=postgres \\\n' +
-      '    -e POSTGRES_DB=gestaopro_test -p 5434:5432 -d postgres:16-alpine\n\n' +
+      '  docker run --name gestiq-test-db -e POSTGRES_PASSWORD=postgres \\\n' +
+      '    -e POSTGRES_DB=gestiq_test -p 5434:5432 -d postgres:16-alpine\n\n' +
       `Detalhe do Prisma:\n${saida}`
     );
   }

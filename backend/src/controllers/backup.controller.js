@@ -41,7 +41,7 @@ const exportar = asyncHandler(async (req, res) => {
 
   await registrarLog({ usuario: req.usuario?.nome, acao: 'Exportar', modulo: 'Backup' });
 
-  res.setHeader('Content-Disposition', `attachment; filename="backup-gestaopro-${Date.now()}.json"`);
+  res.setHeader('Content-Disposition', `attachment; filename="backup-gestiq-${Date.now()}.json"`);
   res.json(backup);
 });
 

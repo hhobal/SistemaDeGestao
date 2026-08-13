@@ -2,10 +2,10 @@
 // ORIGENS AUTORIZADAS (CORS)
 // ======================================
 // A Vercel gera um domínio novo a cada deploy de preview
-// (gestaopro-web-a1b2c3-usuario.vercel.app). Listar um por um é
+// (gestiq-web-a1b2c3-usuario.vercel.app). Listar um por um é
 // impraticável, então CORS_ORIGINS aceita curinga:
 //
-//   CORS_ORIGINS="https://gestaopro.vercel.app,https://gestaopro-*.vercel.app"
+//   CORS_ORIGINS="https://gestiq.vercel.app,https://gestiq-*.vercel.app"
 //
 // O curinga cobre só o trecho onde está o `*`, e nunca atravessa um
 // ponto. Isso importa: `https://*.vercel.app` autorizaria

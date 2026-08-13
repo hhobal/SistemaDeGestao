@@ -1,4 +1,4 @@
-# GestãoPro — Backend (API REST)
+# GESTIQ — Backend (API REST)
 
 Backend em Node.js + Express + Prisma para o Sistema de Gestão (painel
 administrativo + loja virtual). Substitui o `localStorage` por um banco

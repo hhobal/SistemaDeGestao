@@ -135,14 +135,14 @@ describe('temaInicial', () => {
   });
 
   it('respeita a escolha salva', () => {
-    localStorage.setItem('gestaopro_tema', 'claro');
+    localStorage.setItem('gestiq_tema', 'claro');
     expect(temaInicial()).toBe('claro');
   });
 
   it('ignora valor inválido no storage', () => {
     // O localStorage é editável pelo usuário; um valor estranho não pode
     // deixar a interface sem tema.
-    localStorage.setItem('gestaopro_tema', 'roxo');
+    localStorage.setItem('gestiq_tema', 'roxo');
     vi.stubGlobal('matchMedia', () => ({ matches: false }));
     expect(temaInicial()).toBe('escuro');
   });

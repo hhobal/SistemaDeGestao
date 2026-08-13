@@ -111,13 +111,13 @@ describe('leitura do carrinho gravado', () => {
   it('sobrevive a conteúdo corrompido', () => {
     // O localStorage é editável por quem abrir o DevTools; um JSON
     // inválido não pode derrubar a loja.
-    localStorage.setItem('gestaopro_carrinho', '{isso não é json');
+    localStorage.setItem('gestiq_carrinho', '{isso não é json');
     expect(lerCarrinho()).toEqual([]);
   });
 
   it('descarta entradas malformadas', () => {
     localStorage.setItem(
-      'gestaopro_carrinho',
+      'gestiq_carrinho',
       JSON.stringify([
         { produtoId: 1, nome: 'ok', preco: 10, quantidade: 1 },
         { produtoId: 'texto', nome: 'inválido', preco: 10, quantidade: 1 },

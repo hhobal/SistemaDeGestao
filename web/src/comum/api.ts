@@ -42,8 +42,8 @@ const BASE = import.meta.env.VITE_API_URL ?? '/api';
 export type Escopo = 'painel' | 'loja';
 
 const CHAVE_SESSAO: Record<Escopo, string> = {
-  painel: 'gestaopro_sessao',
-  loja: 'gestaopro_sessao_loja'
+  painel: 'gestiq_sessao',
+  loja: 'gestiq_sessao_loja'
 };
 
 export type Sessao = {

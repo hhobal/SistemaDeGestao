@@ -1,6 +1,8 @@
+import { Suspense } from 'react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { ShoppingBag, UserRound } from 'lucide-react';
 import { Simbolo, NOME_PRODUTO } from '@/comum/componentes/Marca';
+import { Carregando } from '@/comum/componentes/Carregando';
 import { useCarrinho } from './CarrinhoContext';
 import { clienteLogado } from './api';
 
@@ -46,7 +48,9 @@ export function LayoutLoja() {
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-6">
-        <Outlet />
+        <Suspense fallback={<Carregando />}>
+          <Outlet />
+        </Suspense>
       </main>
 
       <footer className="mx-auto max-w-6xl px-4 py-8 text-center text-xs text-texto-fraco">

@@ -6,7 +6,7 @@ const env = require('./config/env');
 const prisma = require('./lib/prisma');
 
 const servidor = app.listen(env.porta, () => {
-  console.log(`\n  GestãoPro API rodando em http://localhost:${env.porta}`);
+  console.log(`\n  GESTIQ API rodando em http://localhost:${env.porta}`);
   console.log(`  Ambiente: ${env.ambiente}`);
   console.log(`  Teste rápido: http://localhost:${env.porta}/api/saude\n`);
 });

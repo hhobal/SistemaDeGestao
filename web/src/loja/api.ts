@@ -101,7 +101,7 @@ export const clienteLogado = () => lerSessaoLoja();
 // sistema. Vira pedido apenas no checkout, quando o servidor confere
 // estoque e preço.
 
-const CHAVE_CARRINHO = 'gestaopro_carrinho';
+const CHAVE_CARRINHO = 'gestiq_carrinho';
 
 export type ItemCarrinho = {
   produtoId: number;

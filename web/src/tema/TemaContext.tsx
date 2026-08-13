@@ -15,7 +15,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 
 export type Tema = 'claro' | 'escuro';
 
-const CHAVE = 'gestaopro_tema';
+const CHAVE = 'gestiq_tema';
 
 /** Lê a preferência salva; se não houver, segue a do sistema. */
 export function temaInicial(): Tema {

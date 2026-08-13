@@ -1,3 +1,4 @@
+import { lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ProvedorAuth } from '@/auth/AuthContext';
@@ -5,25 +6,65 @@ import { ProvedorTema } from '@/tema/TemaContext';
 import { RotaProtegida } from '@/auth/RotaProtegida';
 import { Shell } from '@/layout/Shell';
 import { Login } from '@/auth/Login';
-import { Dashboard } from '@/modulos/dashboard/Dashboard';
-import { Clientes } from '@/modulos/clientes/Clientes';
-import { Produtos } from '@/modulos/produtos/Produtos';
-import { Pedidos } from '@/modulos/pedidos/Pedidos';
-import { OrdensServico } from '@/modulos/os/OrdensServico';
-import { Financas } from '@/modulos/financas/Financas';
-import { Estoque } from '@/modulos/estoque/Estoque';
-import { Usuarios } from '@/modulos/usuarios/Usuarios';
-import { Fornecedores } from '@/modulos/fornecedores/Fornecedores';
-import { Agenda } from '@/modulos/agenda/Agenda';
-import { Tarefas } from '@/modulos/tarefas/Tarefas';
-import { Notas } from '@/modulos/notas/Notas';
-import { Relatorios } from '@/modulos/relatorios/Relatorios';
 import { ProvedorCarrinho } from '@/loja/CarrinhoContext';
 import { LayoutLoja } from '@/loja/LayoutLoja';
-import { Catalogo } from '@/loja/Catalogo';
-import { Carrinho } from '@/loja/Carrinho';
-import { Conta } from '@/loja/Conta';
 import { ErroApi } from '@/comum/api';
+
+// ─── DIVISÃO DO PACOTE ─────────────────────
+// Só o login é baixado no primeiro acesso. As dezesseis telas vinham
+// juntas nele, e ninguém usa as duas áreas ao mesmo tempo: quem entra
+// no painel nunca precisa do carrinho, e quem visita a loja nunca vê
+// os relatórios.
+//
+// Fica de fora do adiamento o que forma a casca — Shell, LayoutLoja e
+// os provedores. São pequenos, e adiá-los faria a estrutura da página
+// aparecer depois do conteúdo, que é pior do que esperar por ela.
+//
+// O `default:` existe porque estes módulos exportam pelo nome e o
+// `lazy()` espera um módulo com exportação padrão. Escrito assim, e não
+// por um ajudante genérico, para o TypeScript continuar sabendo o tipo
+// de cada tela — com o ajudante, todas viravam `unknown`.
+const Dashboard = lazy(async () => ({
+  default: (await import('@/modulos/dashboard/Dashboard')).Dashboard
+}));
+const Clientes = lazy(async () => ({
+  default: (await import('@/modulos/clientes/Clientes')).Clientes
+}));
+const Produtos = lazy(async () => ({
+  default: (await import('@/modulos/produtos/Produtos')).Produtos
+}));
+const Pedidos = lazy(async () => ({
+  default: (await import('@/modulos/pedidos/Pedidos')).Pedidos
+}));
+const OrdensServico = lazy(async () => ({
+  default: (await import('@/modulos/os/OrdensServico')).OrdensServico
+}));
+const Financas = lazy(async () => ({
+  default: (await import('@/modulos/financas/Financas')).Financas
+}));
+const Estoque = lazy(async () => ({
+  default: (await import('@/modulos/estoque/Estoque')).Estoque
+}));
+const Usuarios = lazy(async () => ({
+  default: (await import('@/modulos/usuarios/Usuarios')).Usuarios
+}));
+const Fornecedores = lazy(async () => ({
+  default: (await import('@/modulos/fornecedores/Fornecedores')).Fornecedores
+}));
+const Agenda = lazy(async () => ({
+  default: (await import('@/modulos/agenda/Agenda')).Agenda
+}));
+const Tarefas = lazy(async () => ({
+  default: (await import('@/modulos/tarefas/Tarefas')).Tarefas
+}));
+const Notas = lazy(async () => ({ default: (await import('@/modulos/notas/Notas')).Notas }));
+const Relatorios = lazy(async () => ({
+  default: (await import('@/modulos/relatorios/Relatorios')).Relatorios
+}));
+
+const Catalogo = lazy(async () => ({ default: (await import('@/loja/Catalogo')).Catalogo }));
+const Carrinho = lazy(async () => ({ default: (await import('@/loja/Carrinho')).Carrinho }));
+const Conta = lazy(async () => ({ default: (await import('@/loja/Conta')).Conta }));
 
 const clienteQuery = new QueryClient({
   defaultOptions: {

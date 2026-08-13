@@ -6,7 +6,7 @@
 // abria a sidebar ficava dentro dela, então sumia junto e a navegação
 // ficava inalcançável no telefone.
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import {
   Boxes,
@@ -30,6 +30,7 @@ import {
 import { useAuth } from '@/auth/AuthContext';
 import { useTema } from '@/tema/TemaContext';
 import { Marca } from '@/comum/componentes/Marca';
+import { Carregando } from '@/comum/componentes/Carregando';
 import { Notificacoes } from './Notificacoes';
 
 // `somenteAdmin` esconde o item de quem não pode usá-lo. A API já
@@ -155,8 +156,13 @@ export function Shell() {
           </button>
         </header>
 
+        {/* A espera fica aqui dentro, e não em volta das rotas: a barra
+            lateral e o topo já estão na tela quando o pedaço da página
+            chega, então a navegação não pisca a interface inteira. */}
         <main className="flex-1 p-4 md:p-6">
-          <Outlet />
+          <Suspense fallback={<Carregando />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>

@@ -14,11 +14,11 @@
 services:
   postgres-teste:
     image: postgres:16-alpine
-    container_name: gestaopro-test-db
+    container_name: gestiq-test-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: gestaopro_test
+      POSTGRES_DB: gestiq_test
     ports:
       - "5434:5432"
     healthcheck:

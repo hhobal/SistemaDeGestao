@@ -1,4 +1,4 @@
-# GestãoPro — ERP + Loja Virtual
+# GESTIQ — ERP + Loja Virtual
 
 [![CI](https://github.com/hhobal/SistemaDeGestao/actions/workflows/ci.yml/badge.svg)](https://github.com/hhobal/SistemaDeGestao/actions/workflows/ci.yml)
 
@@ -6,7 +6,11 @@ Sistema de gestão empresarial com loja virtual integrada. Reúne painel
 administrativo, catálogo público com carrinho e checkout, e uma API REST
 com autenticação, controle de estoque e módulo financeiro.
 
-**Demo:** [gestao-livid-three.vercel.app](https://gestao-livid-three.vercel.app/login.html) · `admin` / `admin123`
+**Demo:** [gestao-livid-three.vercel.app](https://gestao-livid-three.vercel.app/login) · `admin` / `admin123`
+
+> A API hiberna após 15 minutos sem uso — o plano gratuito do Render.
+> O primeiro acesso depois disso leva cerca de 30 segundos para o
+> servidor subir; a partir daí as respostas ficam abaixo de 300 ms.
 
 ---
 
@@ -143,6 +147,13 @@ então cada tela buscava seus próprios dados numa pasta irmã — mexer em
 Pedidos significava abrir três pastas diferentes. Hoje `modulos/pedidos/`
 contém as requisições, os componentes e o teste do módulo. Um import de
 um módulo dentro de outro passa a ser um sinal visível de acoplamento.
+
+**Pacote dividido por área.** As dezesseis telas vinham num arquivo só
+de 507 kB, mesmo para quem só ia abrir o login. Cada tela agora é um
+pedaço carregado sob demanda, e o primeiro acesso baixa 385 kB — a
+casca fica visível enquanto a página chega, então a navegação não pisca.
+Quem entra no painel nunca baixa o carrinho, e quem visita a loja nunca
+baixa os relatórios.
 
 **Identificação do cliente atrás de proxy.** A requisição atravessa
 Cloudflare e o balanceador do Render, deixando três endereços em

@@ -1,4 +1,4 @@
-# GestãoPro — Interface (React)
+# GESTIQ — Interface (React)
 
 Reescrita do painel administrativo em React, consumindo a mesma API REST
 da versão anterior.

@@ -1,7 +1,7 @@
 {
-  "name": "gestaopro-backend",
+  "name": "gestiq-backend",
   "version": "1.0.0",
-  "description": "API REST do Sistema de Gestão (GestãoPro) — clientes, produtos, pedidos, O.S., estoque, finanças e loja virtual.",
+  "description": "API REST do Sistema de Gestão (GESTIQ) — clientes, produtos, pedidos, O.S., estoque, finanças e loja virtual.",
   "main": "src/server.js",
   "type": "commonjs",
   "scripts": {

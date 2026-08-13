@@ -1,5 +1,5 @@
 // ======================================
-// GESTÃOPRO — SCHEMA DO BANCO DE DADOS
+// GESTIQ — SCHEMA DO BANCO DE DADOS
 // ======================================
 // PostgreSQL em todos os ambientes (Supabase em produção, Postgres local
 // nos testes). Manter o mesmo banco em dev e produção evita a classe de

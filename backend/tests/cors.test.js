@@ -57,17 +57,17 @@ describe('origens exatas', () => {
 });
 
 describe('curinga', () => {
-  const verificador = criarVerificadorDeOrigem(['https://gestaopro-*.vercel.app']);
+  const verificador = criarVerificadorDeOrigem(['https://gestiq-*.vercel.app']);
 
   it('aceita os domínios de preview do projeto', () => {
-    expect(permite(verificador, 'https://gestaopro-a1b2c3.vercel.app')).toBe(true);
-    expect(permite(verificador, 'https://gestaopro-web-git-main.vercel.app')).toBe(true);
+    expect(permite(verificador, 'https://gestiq-a1b2c3.vercel.app')).toBe(true);
+    expect(permite(verificador, 'https://gestiq-web-git-main.vercel.app')).toBe(true);
   });
 
   it('não atravessa ponto', () => {
     // Sem isso, um curinga de subdomínio viraria porta de entrada para
     // qualquer host abaixo dele.
-    expect(permite(verificador, 'https://gestaopro-x.evil.vercel.app')).toBe(false);
+    expect(permite(verificador, 'https://gestiq-x.evil.vercel.app')).toBe(false);
   });
 
   it('respeita o prefixo', () => {
@@ -75,7 +75,7 @@ describe('curinga', () => {
   });
 
   it('respeita o domínio final', () => {
-    expect(permite(verificador, 'https://gestaopro-a1b2.vercel.app.evil.com')).toBe(false);
+    expect(permite(verificador, 'https://gestiq-a1b2.vercel.app.evil.com')).toBe(false);
   });
 });
 
@@ -99,10 +99,10 @@ describe('combinação', () => {
   it('aceita exata e curinga na mesma configuração', () => {
     const verificador = criarVerificadorDeOrigem([
       'http://localhost:5173',
-      'https://gestaopro-*.vercel.app'
+      'https://gestiq-*.vercel.app'
     ]);
     expect(permite(verificador, 'http://localhost:5173')).toBe(true);
-    expect(permite(verificador, 'https://gestaopro-abc.vercel.app')).toBe(true);
+    expect(permite(verificador, 'https://gestiq-abc.vercel.app')).toBe(true);
     expect(permite(verificador, 'https://qualquer.com')).toBe(false);
   });
 
