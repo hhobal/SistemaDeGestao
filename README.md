@@ -6,7 +6,7 @@ Sistema de gestão empresarial com loja virtual integrada. Reúne painel
 administrativo, catálogo público com carrinho e checkout, e uma API REST
 com autenticação, controle de estoque e módulo financeiro.
 
-**Demo:** [gestao-livid-three.vercel.app](https://gestiq.vercel.app/) `admin` / `admin123`
+**Demo:** [https://gestiq.vercel.app/](https://gestiq.vercel.app/) `admin` / `admin123`
 
 > A API hiberna após 15 minutos sem uso — o plano gratuito do Render.
 > O primeiro acesso depois disso leva cerca de 30 segundos para o
