@@ -29,12 +29,12 @@ describe('sem configuração', () => {
 describe('origens exatas', () => {
   const verificador = criarVerificadorDeOrigem([
     'http://localhost:5173',
-    'https://gestao-livid-three.vercel.app'
+    'https://gestiq.vercel.app'
   ]);
 
   it('aceita as que estão na lista', () => {
     expect(permite(verificador, 'http://localhost:5173')).toBe(true);
-    expect(permite(verificador, 'https://gestao-livid-three.vercel.app')).toBe(true);
+    expect(permite(verificador, 'https://gestiq.vercel.app')).toBe(true);
   });
 
   it('recusa as que não estão', () => {
